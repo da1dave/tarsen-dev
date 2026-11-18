@@ -47,7 +47,10 @@ function traducir(e: AuthError): string {
     case 'same_password': return 'La nueva contraseña debe ser distinta de la actual.'
     case 'reauthentication_needed': return 'Por seguridad, cierra sesión, vuelve a entrar e intenta de nuevo.'
     case 'weak_password': return 'La contraseña es muy débil. Usa mínimo 8 caracteres con letras y números.'
+    // El correo de confirmación no se pudo enviar (el servicio de correo gratis de Supabase tiene límites).
     case 'over_email_send_rate_limit':
+    case 'email_address_invalid':
+    case 'email_address_not_authorized': return 'No pudimos enviar el correo de confirmación a esa dirección. Intenta más tarde o con otro correo.'
     case 'over_request_rate_limit': return 'Demasiados intentos. Espera unos minutos e intenta de nuevo.'
     default: return 'No pudimos completar la operación. Intenta de nuevo.'
   }
