@@ -1,0 +1,183 @@
+/*
+ * Plantilla Marea: clara y líquida. Tinta violeta oscura sobre tonos pastel, paneles de cristal
+ * esmerilado y tipografía Bricolage Grotesque. El color de la marca (--acento) tiñe botones y fondos.
+ */
+.raiz {
+  --tinta: #1a1530;
+  --tinta-suave: #4c4566;
+  --claro: color-mix(in oklab, var(--acento) 7%, #fbfaff);
+  --claro-2: color-mix(in oklab, var(--acento) 14%, #f4f1ff);
+  --oscuro: color-mix(in oklab, var(--acento) 22%, #120f22);
+  --linea: color-mix(in oklab, var(--acento) 22%, transparent);
+  --titulo: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --texto: var(--fuente-texto, 'Inter', system-ui, sans-serif);
+  position: relative;
+  background: var(--claro);
+  color: var(--tinta);
+  font-family: var(--texto);
+  overflow-x: clip; /* las olas son más anchas que la pantalla */
+}
+.hueco { font-style: italic; opacity: 0.75; }
+
+/* ---------- Barra ---------- */
+.nav {
+  position: fixed;
+  z-index: 50;
+  inset: 0 0 auto 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px clamp(16px, 3vw, 40px);
+  transition: background 0.5s ease, padding 0.5s ease, box-shadow 0.5s ease;
+}
+.navFondo { padding-top: 12px; padding-bottom: 12px; background: rgba(255, 255, 255, 0.42); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
+.marca { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--tinta); text-decoration: none; font: 700 clamp(17px, 1.5vw, 21px) var(--titulo); letter-spacing: -0.01em; }
+.marca img { width: 34px; height: 34px; object-fit: contain; }
+.marca span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40vw; }
+.enlaces { display: flex; gap: clamp(14px, 2vw, 28px); margin-left: auto; }
+.enlaces a { color: var(--tinta); text-decoration: none; font-weight: 600; font-size: 14.5px; opacity: 0.75; transition: opacity 0.2s; }
+.enlaces a:hover { opacity: 1; }
+.pildora { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 999px; background: var(--tinta); color: #fff; text-decoration: none; font-weight: 600; font-size: 14px; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s; }
+.pildora:hover { transform: translateY(-2px); background: var(--acento); }
+.pildora svg { width: 18px; height: 18px; }
+
+/* ---------- Capítulos ---------- */
+.capitulos { position: relative; }
+.escenario { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+.lienzo { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.capitulo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: clamp(96px, 12vh, 140px) clamp(16px, 5vw, 80px) clamp(40px, 9vh, 96px);
+  pointer-events: none;
+}
+.capituloActivo { pointer-events: auto; }
+.marcaFoto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.cristal {
+  max-width: 600px;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  box-shadow: 0 30px 80px rgba(26, 21, 48, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(40px) scale(0.97);
+  transition: opacity 0.7s ease, filter 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.capituloActivo .cristal { opacity: 1; filter: none; transform: none; transition-delay: 0.15s; }
+.numero { margin: 0 0 14px; font: 600 13px var(--texto); letter-spacing: 0.18em; color: var(--tinta-suave); }
+.numero span { opacity: 0.6; }
+.titulo { margin: 0; font: 700 clamp(36px, 5.6vw, 76px) / 0.98 var(--titulo); letter-spacing: -0.035em; text-wrap: balance; }
+.bajada { margin: 18px 0 0; max-width: 46ch; font-size: clamp(16px, 1.35vw, 19px); line-height: 1.55; color: var(--tinta-suave); }
+.boton { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 13px 22px; border-radius: 999px; background: var(--tinta); color: #fff; text-decoration: none; font-weight: 600; font-size: 15px; transition: gap 0.3s, background 0.3s; }
+.boton:hover { gap: 16px; background: var(--acento); }
+.etiquetaFoto { margin: 18px 0 0; padding-top: 14px; border-top: 1px dashed rgba(26, 21, 48, 0.25); font-size: 13px; font-style: italic; color: var(--tinta-suave); }
+
+.indice { position: absolute; right: clamp(14px, 2.5vw, 36px); top: 50%; translate: 0 -50%; display: flex; flex-direction: column; gap: 6px; }
+.indice button { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 6px 0; border: 0; background: transparent; color: var(--tinta); font: 600 12px var(--texto); letter-spacing: 0.12em; cursor: pointer; opacity: 0.45; transition: opacity 0.3s; }
+.indice button::after { content: ''; width: 18px; height: 2px; border-radius: 2px; background: currentColor; transition: width 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.indice button:hover, .indice button[aria-current='true'] { opacity: 1; }
+.indice button[aria-current='true']::after { width: 40px; }
+.desliza { position: absolute; left: 50%; bottom: 20px; translate: -50% 0; margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--tinta); opacity: 0.6; transition: opacity 0.5s; }
+.desliza span { display: inline-block; animation: bajar 1.8s ease-in-out infinite; }
+.oculto { opacity: 0; }
+@keyframes bajar { 50% { transform: translateY(5px); } }
+
+/* ---------- Secciones ---------- */
+.seccion { position: relative; background: var(--claro); padding: clamp(72px, 10vw, 140px) 0; }
+.nosotros { background: var(--claro-2); }
+.contenido { position: relative; width: min(1180px, 100% - 2 * clamp(16px, 5vw, 80px)); margin: 0 auto; }
+.cabecera { max-width: 760px; margin: 0 auto clamp(40px, 6vw, 72px); text-align: center; }
+.etiqueta { display: inline-block; margin: 0 0 18px; padding: 6px 14px; border: 1px solid var(--linea); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tinta-suave); }
+.h2 { margin: 0; font: 700 clamp(30px, 4.2vw, 56px) / 1.03 var(--titulo); letter-spacing: -0.03em; text-wrap: balance; }
+.h2Grande { margin: 0; font: 700 clamp(36px, 6vw, 84px) / 1 var(--titulo); letter-spacing: -0.035em; text-wrap: balance; }
+.h3 { margin: 6px 0 0; font: 700 clamp(20px, 1.8vw, 24px) / 1.2 var(--titulo); letter-spacing: -0.015em; }
+.parrafo { margin: 18px auto 0; max-width: 60ch; font-size: clamp(16px, 1.25vw, 18px); line-height: 1.65; color: var(--tinta-suave); }
+.parrafoChico { margin: 10px 0 0; font-size: 15.5px; line-height: 1.6; color: var(--tinta-suave); }
+
+/* Ola en el borde superior */
+.ola { position: absolute; left: -3%; bottom: calc(100% - 1px); width: 106%; height: clamp(50px, 7vw, 110px); pointer-events: none; }
+.olaFondo { fill: var(--claro); opacity: 0.5; transform-origin: bottom; animation: mecer 7s ease-in-out infinite; }
+.olaFrente { fill: var(--claro); transform-origin: bottom; animation: mecer 5s ease-in-out infinite reverse; }
+.olaInvertida .olaFondo, .olaInvertida .olaFrente { fill: var(--oscuro); }
+@keyframes mecer { 50% { transform: scaleY(0.82) translateX(-1.5%); } }
+
+/* Servicios */
+.servicios { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: clamp(18px, 2.4vw, 32px); }
+.servicio { display: flex; flex-direction: column; padding: 14px 14px 26px; border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 26px; background: rgba(255, 255, 255, 0.55); box-shadow: 0 20px 60px color-mix(in oklab, var(--acento) 12%, transparent); transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.servicio:hover { transform: translateY(-6px); }
+.servicio > :not(.llenado) { padding: 0 10px; }
+.servNumero { margin-top: 20px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.18em; color: var(--acento); }
+
+/* Foto que se llena como agua: una máscara con borde de ola que sube. */
+.llenado {
+  --ola-mascara: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 400' preserveAspectRatio='none'%3E%3Cpath d='M0 200 C 40 193, 60 207, 100 200 S 160 193, 200 200 V400 H0Z'/%3E%3C/svg%3E");
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--acento) 10%, #fff);
+}
+.llenado img, .vacia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  -webkit-mask: var(--ola-mascara) 0 0 / 100% 210% no-repeat;
+  mask: var(--ola-mascara) 0 0 / 100% 210% no-repeat;
+  transform: scale(1.08);
+  transition: -webkit-mask-position 1.6s cubic-bezier(0.3, 0.7, 0.2, 1), mask-position 1.6s cubic-bezier(0.3, 0.7, 0.2, 1), transform 2.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lleno img, .lleno .vacia { -webkit-mask-position: 0 100%; mask-position: 0 100%; transform: none; }
+.vacia { display: grid; place-items: center; padding: 20px; background: linear-gradient(135deg, color-mix(in oklab, var(--acento) 30%, #fff), color-mix(in oklab, var(--acento) 12%, #fff)); text-align: center; font-size: 14px; font-style: italic; color: var(--tinta-suave); }
+
+/* Nosotros */
+.historia { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: clamp(32px, 6vw, 96px); }
+.historia .h2, .historia .parrafo { text-align: left; margin-left: 0; }
+.unaColumna { grid-template-columns: 1fr; max-width: 760px; }
+.fotoHistoria { aspect-ratio: 4 / 5; border-radius: 32px; }
+.cifras { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+.cifra { flex: 1 1 150px; padding: 18px 20px; border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 20px; background: rgba(255, 255, 255, 0.6); }
+.cifra strong { display: block; font: 700 clamp(30px, 3.2vw, 42px) / 1 var(--titulo); letter-spacing: -0.03em; color: var(--acento); }
+.cifra > span { display: block; margin-top: 8px; font-size: 14px; line-height: 1.45; color: var(--tinta-suave); }
+
+/* Contacto */
+.contacto { position: relative; isolation: isolate; padding: clamp(80px, 11vw, 150px) 0 clamp(60px, 8vw, 100px); background: var(--oscuro); color: #fff; }
+.contacto .etiqueta { border-color: rgba(255, 255, 255, 0.25); color: rgba(255, 255, 255, 0.75); }
+.manchas { position: absolute; inset: 0; z-index: -1; overflow: hidden; filter: blur(70px); opacity: 0.55; }
+.manchas i { position: absolute; width: 46vw; height: 46vw; border-radius: 50%; animation: flotar 18s ease-in-out infinite; }
+.manchas i:nth-child(1) { left: -10%; top: 10%; background: var(--acento); }
+.manchas i:nth-child(2) { right: -12%; top: 25%; background: color-mix(in oklab, var(--acento), #3fe0d0 60%); animation-delay: -6s; }
+.manchas i:nth-child(3) { left: 30%; bottom: -30%; background: color-mix(in oklab, var(--acento), #ff8fc6 60%); animation-delay: -12s; }
+@keyframes flotar { 33% { transform: translate(6%, -8%) scale(1.1); } 66% { transform: translate(-6%, 6%) scale(0.92); } }
+.botonGrande { display: inline-flex; align-items: center; gap: 10px; margin-top: 32px; padding: 16px 28px; border-radius: 999px; background: #fff; color: var(--tinta); text-decoration: none; font-weight: 700; font-size: 16px; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.botonGrande:hover { transform: translateY(-3px) scale(1.02); }
+.botonGrande svg { width: 20px; height: 20px; }
+.datosContacto { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 16px; }
+.datosContacto > div { padding: 24px; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 22px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.datosContacto h3 { margin: 0 0 10px; font: 600 13px var(--texto); letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.datosContacto p { margin: 6px 0 0; font-size: 15.5px; line-height: 1.5; overflow-wrap: anywhere; }
+
+.pie { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 22px clamp(16px, 5vw, 80px); background: var(--oscuro); border-top: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.6); font-size: 13.5px; }
+
+/* ---------- Celular ---------- */
+@media (max-width: 760px) {
+  .enlaces { display: none; }
+  .pildora { margin-left: auto; padding: 10px 14px; }
+  .capitulo { padding: 88px 16px 64px; }
+  .cristal { border-radius: 22px; }
+  .indice { top: auto; bottom: 18px; right: 50%; translate: 50% 0; flex-direction: row; gap: 10px; }
+  .indice button span { display: none; }
+  .desliza { display: none; }
+  .historia { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cristal, .llenado img, .vacia { transition: none; }
+  .olaFondo, .olaFrente, .manchas i, .desliza span { animation: none; }
+}

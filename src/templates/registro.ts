@@ -1,6 +1,7 @@
 import { lazy, type ComponentType } from 'react'
 import { ejemploAurea } from './aurea/ejemplo'
 import { ejemploManta } from './manta/ejemplo'
+import { ejemploMarea } from './marea/ejemplo'
 import type { DatosPlantilla } from './tipos'
 
 /*
@@ -18,4 +19,5 @@ export const PLANTILLAS: Record<string, Plantilla> = {
   orbita: { nombre: 'Órbita', Componente: lazy(() => import('./orbita/PlantillaOrbita')) },
   manta: { nombre: 'Manta', Componente: lazy(() => import('./manta/PlantillaManta')), ejemplo: ejemploManta },
   aurea: { nombre: 'Áurea', Componente: lazy(() => import('./aurea/PlantillaAurea')), ejemplo: ejemploAurea },
+  marea: { nombre: 'Marea', Componente: lazy(() => import('./marea/PlantillaMarea')), ejemplo: ejemploMarea },
 }
