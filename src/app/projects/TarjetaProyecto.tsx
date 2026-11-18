@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { CATALOGO } from '../../templates/catalogo'
 import { PLANTILLAS } from '../../templates/registro'
-import type { Proyecto } from '../../lib/proyectos'
+import { urlPublica, type Proyecto } from '../../lib/proyectos'
 import styles from './Proyectos.module.css'
 
 const relativa = new Intl.RelativeTimeFormat('es', { numeric: 'auto' })
@@ -33,6 +33,9 @@ export default function TarjetaProyecto({ p, onBorrar }: { p: Proyecto; onBorrar
           <span>Plantilla {PLANTILLAS[p.plantilla]?.nombre ?? p.plantilla} · editado {haceCuanto(p.actualizado)}</span>
         </div>
       </Link>
+      {p.estado === 'publicado' && p.slug && (
+        <a className={styles.verPagina} href={urlPublica(p.slug)} target="_blank" rel="noreferrer">Ver página publicada ↗</a>
+      )}
       {onBorrar && (
         <button type="button" className={styles.borrar} onClick={() => onBorrar(p)} aria-label={`Borrar ${p.nombre}`}>Borrar</button>
       )}

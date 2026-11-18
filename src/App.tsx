@@ -12,6 +12,7 @@ import VistaPlantilla from './app/templates/VistaPlantilla'
 import ListaProyectos from './app/projects/ListaProyectos'
 import Editor from './app/projects/Editor'
 import VistaProyecto from './app/projects/VistaProyecto'
+import PaginaPublica from './publica/PaginaPublica'
 import type { ReactElement } from 'react'
 
 function Privada({ children }: { children: ReactElement }) {
@@ -38,6 +39,7 @@ export default function App() {
       </Route>
       <Route path="/vista/proyecto/:pid" element={<Privada><VistaProyecto /></Privada>} />
       <Route path="/vista/:id/:modo" element={<Privada><VistaPlantilla /></Privada>} />
+      <Route path="/s/:slug" element={<PaginaPublica />} />
       <Route path="/plantillas" element={<Navigate to="/app/plantillas" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

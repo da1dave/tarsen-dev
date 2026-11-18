@@ -7,6 +7,7 @@ import type { DatosPlantilla } from '../../templates/tipos'
 import * as ed from './edicion'
 import { PLANTILLAS } from '../../templates/registro'
 import FormularioIA from './FormularioIA'
+import PanelPublicar from './PanelPublicar'
 import { CampoDictado } from './dictado'
 import styles from './Editor.module.css'
 
@@ -114,7 +115,7 @@ export default function Editor() {
   const guardarDatos = async (nuevos: DatosPlantilla, mensaje: string) => {
     const p = actual.current
     if (!p) return
-    setProyecto((x) => (x ? { ...x, datos: nuevos } : x))
+    setProyecto((x) => (x ? { ...x, datos: nuevos, actualizado: new Date().toISOString() } : x))
     try {
       await guardarProyecto(p.id, { datos: nuevos })
       setAviso(mensaje)
@@ -202,7 +203,7 @@ export default function Editor() {
       ])
       setAnteriores((n) => Math.min(n, corte))
       setModoChat(false)
-      setProyecto((p) => (p ? { ...p, datos: r.datos, mensajes_usados: p.mensajes_usados + 1 } : p))
+      setProyecto((p) => (p ? { ...p, datos: r.datos, mensajes_usados: p.mensajes_usados + 1, actualizado: new Date().toISOString() } : p))
     } catch (err) {
       setErrorChat(err instanceof Error ? err.message : 'Nuestra IA no pudo responder.')
       setMensajes(antes)
@@ -276,6 +277,7 @@ export default function Editor() {
         </button>
         <span className={styles.plantilla}>Plantilla {plantilla?.nombre ?? proyecto.plantilla}</span>
         <a className={styles.abrir} href={vista} target="_blank" rel="noreferrer">Abrir vista ↗</a>
+        <PanelPublicar proyecto={proyecto} cambiar={(c) => setProyecto((p) => (p ? { ...p, ...c } : p))} />
       </header>
 
       <div className={styles.cuerpo}>

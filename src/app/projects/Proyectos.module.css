@@ -11,3 +11,5 @@
 .tarjeta:hover .borrar, .borrar:focus-visible { opacity: 1; }
 .error { margin: 0; padding: 14px 18px; border-radius: var(--radio); background: rgba(255, 90, 90, 0.12); color: #ffb4b4; }
 @media (hover: none) { .borrar { opacity: 1; } }
+.verPagina { padding: 0 18px 16px; color: #b5f2d6; font: 600 13px var(--fuente-texto); text-decoration: none; }
+.verPagina:hover { text-decoration: underline; text-underline-offset: 4px; }

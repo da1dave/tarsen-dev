@@ -23,3 +23,24 @@ export function prepararDatos(d: DatosPlantilla): DatosPlantilla {
 
 /** ¿Hay que dibujar el recuadro de foto? (no si no hay imagen ni etiqueta) */
 export const conFoto = (imagen: string, etiqueta: string) => Boolean(imagen || etiqueta)
+
+/**
+ * Datos para la página publicada: además de lo de prepararDatos, las fotos que el usuario no subió
+ * pierden su etiqueta («→ acá va la foto… ←»), así los visitantes no ven recuadros de ejemplo.
+ */
+export function prepararPublicacion(d: DatosPlantilla): DatosPlantilla {
+  const p = prepararDatos(d)
+  const limpiar = <T extends { imagen: string; fotoEtiqueta: string }>(x: T) => (x.imagen ? x : { ...x, fotoEtiqueta: '' })
+  return {
+    ...p,
+    slides: p.slides.map(limpiar),
+    servicios: p.servicios.map(limpiar),
+    ...(p.historiaImagen ? {} : { historiaFotoEtiqueta: '' }),
+  }
+}
+
+/** ¿Quedan textos de ejemplo («→ acá va… ←») visibles en la página? */
+export const tieneEjemplos = (d: DatosPlantilla) => {
+  const p = prepararPublicacion(d)
+  return JSON.stringify({ ...p, logo: '', logoFondo: '' }).includes('→ acá va')
+}
