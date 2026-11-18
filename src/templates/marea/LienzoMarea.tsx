@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type MutableRefObject } from 'react'
  * Lienzo de Marea: dibuja la escena de cada destacado a pantalla completa y, al hacer scroll,
  * la siguiente entra como agua que sube: frente ondulado, refracción, espuma y brillo iridiscente.
  * Una escena es la foto del destacado o, si no tiene, un degradado líquido con los colores de la marca.
+ * Si la imagen tiene transparencia (un logo PNG), flota sobre el líquido y ondula como bajo el agua.
  * WebGL 1 sin librerías. Si el navegador no tiene WebGL se muestran las escenas con CSS.
  */
 
@@ -22,7 +23,7 @@ const FRAGMENTO = `
 precision highp float;
 varying vec2 vUv;
 uniform vec2 uRes;
-uniform float uTime, uMix, uSeed0, uSeed1, uHas0, uHas1;
+uniform float uTime, uMix, uSeed0, uSeed1, uHas0, uHas1, uModo0, uModo1;
 uniform vec2 uImg0, uImg1, uMouse;
 uniform vec3 uA0, uB0, uC0, uA1, uB1, uC1;
 uniform sampler2D uTex0, uTex1;
@@ -46,11 +47,41 @@ vec2 cubrir(vec2 uv, vec2 img) {
   return (uv - 0.5) * s + 0.5;
 }
 
-vec3 escena(vec2 uv, float seed, vec3 a, vec3 b, vec3 c, float has, sampler2D tex, vec2 img) {
+vec3 liquido(vec2 uv, float seed, vec3 a, vec3 b, vec3 c);
+
+// Logo (imagen con transparencia): flota sobre el líquido, ondula y deja bordes iridiscentes.
+vec3 conLogo(vec2 uv, vec3 fondo, sampler2D tex, vec2 img) {
+  float asp = uRes.x / uRes.y;
+  bool ancho = asp > 1.0;
+  vec2 centro = (ancho ? vec2(0.68, 0.53) : vec2(0.5, 0.7)) + vec2(0.0, sin(uTime * 0.6) * 0.012);
+  float alto = ancho ? 0.64 : 0.36;
+  vec2 q = (uv - centro) * vec2(asp, 1.0) / alto;
+  float ri = img.x / max(img.y, 1.0);
+  vec2 ola = vec2(fbm(q * 2.6 + uTime * 0.25), fbm(q * 2.6 + 5.0 - uTime * 0.25)) - 0.5;
+  vec2 st = vec2(q.x / ri, q.y) + 0.5 + ola * 0.05;
+  float dentro = step(0.0, st.x) * step(st.x, 1.0) * step(0.0, st.y) * step(st.y, 1.0);
+  vec2 t = vec2(st.x, 1.0 - st.y);
+  vec4 l = texture2D(tex, t);
+  float rA = texture2D(tex, t + vec2(0.006, 0.0)).a, bA = texture2D(tex, t - vec2(0.006, 0.0)).a;
+  float al = l.a * dentro;
+  // Halo suave detrás del logo y borde de color (aberración) como luz atravesando agua.
+  vec3 col = fondo + exp(-length(q) * 2.2) * 0.12;
+  col += vec3(1.0, 0.35, 0.8) * max(rA - l.a, 0.0) * dentro * 0.55 + vec3(0.3, 0.8, 1.0) * max(bA - l.a, 0.0) * dentro * 0.55;
+  vec3 iris = 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + ola.x * 3.0 + q.y + uTime * 0.08));
+  vec3 logo = l.rgb + iris * 0.1 * smoothstep(0.3, 0.9, l.a);
+  return mix(col, logo, al);
+}
+
+vec3 escena(vec2 uv, float seed, vec3 a, vec3 b, vec3 c, float has, float modo, sampler2D tex, vec2 img) {
+  if (has > 0.5 && modo > 0.5) return conLogo(uv, liquido(uv, seed, a, b, c), tex, img);
   if (has > 0.5) {
     vec2 st = cubrir((uv - 0.5) * 0.96 + 0.5 + vec2(sin(uTime * 0.07 + seed), cos(uTime * 0.05 + seed)) * 0.008, img);
     return texture2D(tex, vec2(st.x, 1.0 - st.y)).rgb;
   }
+  return liquido(uv, seed, a, b, c);
+}
+
+vec3 liquido(vec2 uv, float seed, vec3 a, vec3 b, vec3 c) {
   // Degradado líquido: ruido deformado sobre sí mismo, con los tres colores de la escena.
   vec2 p = vec2(uv.x * uRes.x / uRes.y, uv.y) * 1.5 + seed * 3.7;
   float t = uTime * 0.04;
@@ -84,12 +115,12 @@ void main() {
 
   vec3 col;
   if (uMix < 0.002) {
-    col = escena(uv, uSeed0, uA0, uB0, uC0, uHas0, uTex0, uImg0);
+    col = escena(uv, uSeed0, uA0, uB0, uC0, uHas0, uModo0, uTex0, uImg0);
   } else if (uMix > 0.998) {
-    col = escena(uv, uSeed1, uA1, uB1, uC1, uHas1, uTex1, uImg1);
+    col = escena(uv, uSeed1, uA1, uB1, uC1, uHas1, uModo1, uTex1, uImg1);
   } else {
-    vec3 antes = escena(uv - desv * 0.4, uSeed0, uA0, uB0, uC0, uHas0, uTex0, uImg0);
-    vec3 nueva = escena(uv + desv, uSeed1, uA1, uB1, uC1, uHas1, uTex1, uImg1);
+    vec3 antes = escena(uv - desv * 0.4, uSeed0, uA0, uB0, uC0, uHas0, uModo0, uTex0, uImg0);
+    vec3 nueva = escena(uv + desv, uSeed1, uA1, uB1, uC1, uHas1, uModo1, uTex1, uImg1);
     col = mix(antes, nueva, smoothstep(-0.004, 0.004, d));
     // Brillo iridiscente y espuma en el frente del agua.
     vec3 iris = 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + d * 9.0 + x * 0.5 + uTime * 0.1));
@@ -106,7 +137,23 @@ const aRgb = (hex: string): [number, number, number] => {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
 }
 
-interface Textura { tex: WebGLTexture; ancho: number; alto: number; listo: boolean; src: string }
+interface Textura { tex: WebGLTexture; ancho: number; alto: number; listo: boolean; src: string; logo: boolean }
+
+/** ¿La imagen tiene transparencia en su borde? (un logo PNG y no una foto) */
+function esLogo(img: HTMLImageElement) {
+  try {
+    const c = document.createElement('canvas')
+    c.width = c.height = 24
+    const ctx = c.getContext('2d', { willReadFrequently: true })!
+    ctx.drawImage(img, 0, 0, 24, 24)
+    const d = ctx.getImageData(0, 0, 24, 24).data
+    let transparentes = 0
+    for (let i = 0; i < 24; i++) for (const [x, y] of [[i, 0], [i, 23], [0, i], [23, i]]) if (d[(y * 24 + x) * 4 + 3] < 200) transparentes++
+    return transparentes > 24
+  } catch {
+    return false // sin permiso para leer los píxeles: se trata como foto
+  }
+}
 
 export default function LienzoMarea({ escenas, progreso, quieto, className, alAvanzar }: Props) {
   const avisar = useRef(alAvanzar)
@@ -163,7 +210,7 @@ export default function LienzoMarea({ escenas, progreso, quieto, className, alAv
     cargar.current = (lista) => {
       for (const e of lista) {
         if (!e.imagen || texturas.has(e.imagen)) continue
-        const t: Textura = { tex: vacia(), ancho: 1, alto: 1, listo: false, src: e.imagen }
+        const t: Textura = { tex: vacia(), ancho: 1, alto: 1, listo: false, src: e.imagen, logo: false }
         texturas.set(e.imagen, t)
         const img = new Image()
         img.crossOrigin = 'anonymous'
@@ -174,7 +221,7 @@ export default function LienzoMarea({ escenas, progreso, quieto, className, alAv
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-          Object.assign(t, { ancho: img.naturalWidth, alto: img.naturalHeight, listo: true })
+          Object.assign(t, { ancho: img.naturalWidth, alto: img.naturalHeight, listo: true, logo: esLogo(img) })
         }
         img.src = e.imagen
       }
@@ -188,6 +235,7 @@ export default function LienzoMarea({ escenas, progreso, quieto, className, alAv
       gl.uniform3fv(u(`uB${k}`), b)
       gl.uniform3fv(u(`uC${k}`), c)
       gl.uniform1f(u(`uHas${k}`), t?.listo ? 1 : 0)
+      gl.uniform1f(u(`uModo${k}`), t?.logo ? 1 : 0)
       gl.uniform2f(u(`uImg${k}`), t?.ancho ?? 1, t?.alto ?? 1)
       gl.activeTexture(unidad)
       gl.bindTexture(gl.TEXTURE_2D, t?.listo ? t.tex : negra)
