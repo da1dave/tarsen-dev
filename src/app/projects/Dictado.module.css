@@ -1,11 +1,14 @@
 .contenedor { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .campo { position: relative; display: flex; }
-.campo input { flex: 1; min-width: 0; padding-right: 46px !important; }
+.campo input, .campo textarea { flex: 1; min-width: 0; padding-right: 46px !important; }
+.campo textarea { display: block; resize: none; line-height: 1.45; }
+/* En el área que crece, el micrófono queda abajo, junto a la última línea. */
+.area .micro { top: auto; bottom: 5px; transform: none; }
 .micro { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--suave); cursor: pointer; transition: color 0.2s, background 0.2s; }
 .micro:hover:not(:disabled) { color: var(--blanco); background: var(--superficie-2); }
 .micro:disabled { opacity: 0.4; cursor: not-allowed; }
 .activo .micro { color: #fff; background: #e5484d; animation: latido 1.4s ease-in-out infinite; }
-.activo input { border-color: #e5484d !important; }
+.activo input, .activo textarea { border-color: #e5484d !important; }
 .estado { color: #ff9b9e; font-size: 12px; }
 .error { color: #ffb4b4; font-size: 12px; }
 @keyframes latido { 0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.5); } 50% { box-shadow: 0 0 0 6px rgba(229, 72, 77, 0); } }

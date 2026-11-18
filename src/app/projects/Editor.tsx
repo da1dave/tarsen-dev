@@ -8,7 +8,7 @@ import * as ed from './edicion'
 import { PLANTILLAS } from '../../templates/registro'
 import FormularioIA from './FormularioIA'
 import PanelPublicar from './PanelPublicar'
-import { CampoDictado } from './dictado'
+import { AreaDictado } from './dictado'
 import styles from './Editor.module.css'
 
 const FOTOS_POR_MENSAJE = 4
@@ -442,9 +442,10 @@ export default function Editor() {
                 >
                   <IconoClip />
                 </button>
-                <CampoDictado
+                <AreaDictado
                   valor={borrador}
                   cambiar={setBorrador}
+                  enviar={() => enviar(borrador)}
                   placeholder="Escribe o dicta tu mensaje a Tarsen…"
                   aria-label="Mensaje para Tarsen"
                   maxLength={1000}

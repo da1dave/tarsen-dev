@@ -56,15 +56,15 @@
 .errorChat { margin: 0 14px 10px; padding: 10px 14px; border-radius: var(--radio); background: rgba(255, 90, 90, 0.12); color: #ffb4b4; font-size: 14px; }
 .restantes { margin: 0; padding: 0 14px 12px; color: var(--suave); font-size: 12px; text-align: center; }
 .entrada { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-top: 1px solid var(--linea); }
-.fila { display: flex; align-items: flex-start; gap: 8px; }
+.fila { display: flex; align-items: flex-end; gap: 8px; }
 .fila > button { min-height: 44px; }
 .volverOpciones { align-self: flex-start; padding: 2px 0; border: 0; background: transparent; color: var(--lavanda); font: 600 13px var(--fuente-texto); cursor: pointer; }
 .volverOpciones:hover { text-decoration: underline; text-underline-offset: 4px; }
 .separador { margin: 4px 0; color: var(--suave); font-size: 12px; text-align: center; letter-spacing: 0.04em; }
-.entrada input { flex: 1; min-width: 0; padding: 12px 14px; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); color: var(--blanco); font: 400 15px var(--fuente-texto); }
-.entrada input:focus { outline: none; border-color: var(--lavanda); }
+.entrada input, .entrada textarea { flex: 1; min-width: 0; padding: 12px 14px; border: 1px solid var(--linea); border-radius: var(--radio); background: var(--superficie); color: var(--blanco); font: 400 15px var(--fuente-texto); }
+.entrada input:focus, .entrada textarea:focus { outline: none; border-color: var(--lavanda); }
 .fila > button { padding: 0 18px; border: 0; border-radius: var(--radio); background: var(--acento); color: #fff; font: 600 14px var(--fuente-texto); cursor: pointer; }
-.fila > button:disabled, .entrada input:disabled { opacity: 0.5; cursor: not-allowed; }
+.fila > button:disabled, .entrada input:disabled, .entrada textarea:disabled { opacity: 0.5; cursor: not-allowed; }
 .vista { width: 100%; height: 100%; border: 0; background: #000; }
 
 @media (max-width: 900px) {

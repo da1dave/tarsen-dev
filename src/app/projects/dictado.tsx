@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type InputHTMLAttributes } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type InputHTMLAttributes } from 'react'
 import styles from './Dictado.module.css'
 
 /*
@@ -105,6 +105,86 @@ export function CampoDictado({ valor, cambiar, className, disabled, ...resto }: 
           disabled={disabled}
           value={escuchando && parcial ? unir(valor, parcial) : valor}
           onChange={(e) => cambiar(e.target.value)}
+        />
+        {disponible && (
+          <button
+            type="button"
+            className={styles.micro}
+            onClick={alternar}
+            disabled={disabled}
+            aria-pressed={escuchando}
+            aria-label={escuchando ? 'Dejar de dictar' : 'Dictar por voz'}
+            title={escuchando ? 'Dejar de dictar' : 'Dictar por voz'}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" />
+            </svg>
+          </button>
+        )}
+      </div>
+      {escuchando && <span className={styles.estado} role="status">Escuchando… habla con naturalidad</span>}
+      {error && <span className={styles.error} role="alert">{error}</span>}
+    </div>
+  )
+}
+
+const ALTO_MAXIMO = 180 // px: unas 7 líneas; desde ahí aparece la barra de desplazamiento
+
+interface PropsArea {
+  valor: string
+  cambiar: (v: string) => void
+  /** Enter envía (Shift+Enter hace un salto de línea). */
+  enviar: () => void
+  className?: string
+  placeholder?: string
+  maxLength?: number
+  disabled?: boolean
+  autoFocus?: boolean
+  'aria-label'?: string
+}
+
+/** Área de texto que crece con lo que se escribe (o dicta) hasta ALTO_MAXIMO, con botón de micrófono. */
+export function AreaDictado({ valor, cambiar, enviar, className, disabled, ...resto }: PropsArea) {
+  const valorActual = useRef(valor)
+  valorActual.current = valor
+  const area = useRef<HTMLTextAreaElement>(null)
+  const { escuchando, parcial, error, alternar, detener } = useDictado((t) => {
+    valorActual.current = unir(valorActual.current, t)
+    cambiar(valorActual.current)
+  })
+  const [disponible] = useState(dictadoDisponible)
+  const mostrado = escuchando && parcial ? unir(valor, parcial) : valor
+
+  useEffect(() => { if (disabled) detener() }, [disabled]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ajusta la altura al contenido y mantiene a la vista lo último que se escribe.
+  useLayoutEffect(() => {
+    const el = area.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight + 2, ALTO_MAXIMO)}px`
+    el.style.overflowY = el.scrollHeight + 2 > ALTO_MAXIMO ? 'auto' : 'hidden'
+    if (escuchando) el.scrollTop = el.scrollHeight
+  }, [mostrado, escuchando])
+
+  return (
+    <div className={styles.contenedor}>
+      <div className={`${styles.campo} ${styles.area} ${escuchando ? styles.activo : ''}`}>
+        <textarea
+          {...resto}
+          ref={area}
+          rows={1}
+          className={className}
+          disabled={disabled}
+          value={mostrado}
+          onChange={(e) => cambiar(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault()
+              if (escuchando) detener()
+              enviar()
+            }
+          }}
         />
         {disponible && (
           <button
