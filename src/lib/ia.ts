@@ -32,17 +32,40 @@ export interface RespuestaIA {
   restantes: number
 }
 
+/*
+ * Mensajes viejos donde nuestra IA escribió el formulario como texto ("[Formulario mostrado]\n- ¿…? (a / b)"):
+ * se quita del texto y se muestra como formulario. (La función chat-plantilla ya lo corrige al responder.)
+ */
+const MARCA_FORMULARIO = /\n?\s*\[\s*formulario(?: mostrado)?\s*\]\s*/i
+function separarFormularioEscrito(texto: string): { texto: string; formulario: Pregunta[] | null } {
+  const corte = texto.search(MARCA_FORMULARIO)
+  if (corte < 0) return { texto, formulario: null }
+  const preguntas = texto.slice(corte).replace(MARCA_FORMULARIO, '').split('\n')
+    .map((l) => l.trim().match(/^[-•*]\s*(.+?)(?:\s*\(([^)]*)\))?\s*$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .slice(0, 3)
+    .map((m): Pregunta => {
+      const opciones = (m[2] ?? '').split('/').map((o) => o.trim()).filter(Boolean).slice(0, 8)
+      return { pregunta: m[1].slice(0, 140), tipo: opciones.length ? 'opciones' : 'texto', opciones }
+    })
+  return { texto: texto.slice(0, corte).trim(), formulario: preguntas.length ? preguntas : null }
+}
+
 export async function cargarMensajes(proyectoId: string): Promise<MensajeChat[]> {
   const { data, error } = await db()
     // Solo las partes que se muestran (el contenido también guarda una copia de la página, datosAntes).
     .from('mensajes').select('id, rol, texto:contenido->>texto, cambios:contenido->cambios, formulario:contenido->formulario, fotos:contenido->fotos')
     .eq('proyecto_id', proyectoId).order('id', { ascending: true })
   if (error) throw error
-  return (data ?? []).map((m) => ({
-    id: m.id, rol: m.rol, texto: m.texto ?? '',
-    cambios: (m.cambios ?? undefined) as MensajeChat['cambios'], formulario: (m.formulario ?? null) as Pregunta[] | null,
-    fotos: (m.fotos ?? undefined) as Foto[] | undefined,
-  }))
+  return (data ?? []).map((m) => {
+    const escrito = m.rol === 'asistente' ? separarFormularioEscrito(m.texto ?? '') : { texto: m.texto ?? '', formulario: null }
+    return {
+      id: m.id, rol: m.rol, texto: escrito.texto,
+      cambios: (m.cambios ?? undefined) as MensajeChat['cambios'],
+      formulario: (m.formulario as Pregunta[] | null) ?? escrito.formulario,
+      fotos: (m.fotos ?? undefined) as Foto[] | undefined,
+    }
+  })
 }
 
 /**

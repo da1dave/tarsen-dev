@@ -336,8 +336,29 @@ async function responderClaude({ sistema, historial, campos }: Peticion): Promis
 // 'claude' (Claude Haiku 5.5, de pago) es el principal; 'gemini' queda como alternativa (PROVEEDOR_IA=gemini).
 export const PROVEEDOR = Deno.env.get('PROVEEDOR_IA') ?? 'claude'
 
-export function responder(p: Peticion): Promise<Respuesta> {
-  if (PROVEEDOR === 'claude') return responderClaude(p)
-  if (PROVEEDOR === 'gemini') return responderGemini(p)
-  throw new ErrorProveedor('otro', `Proveedor de IA no soportado: ${PROVEEDOR}`)
+/*
+ * A veces el modelo escribe el formulario como texto ("[Formulario mostrado]\n- ¿Pregunta? (a / b)")
+ * en vez de usar la herramienta. Se quita del texto y, si no hubo herramienta, se convierte en formulario.
+ */
+const MARCA_FORMULARIO = /\n?\s*\[\s*formulario(?: mostrado)?\s*\]\s*/i
+export function separarFormularioEscrito(texto: string): { texto: string; formulario?: Pregunta[] } {
+  const corte = texto.search(MARCA_FORMULARIO)
+  if (corte < 0) return { texto }
+  const preguntas = texto.slice(corte).replace(MARCA_FORMULARIO, '').split('\n')
+    .map((l) => l.trim().match(/^[-•*]\s*(.+?)(?:\s*\(([^)]*)\))?\s*$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => {
+      const opciones = (m[2] ?? '').split('/').map((o) => o.trim()).filter(Boolean)
+      return { pregunta: m[1], tipo: opciones.length ? 'opciones' : 'texto', opciones }
+    })
+  return { texto: texto.slice(0, corte).trim(), formulario: limpiarFormulario({ preguntas }) }
+}
+
+export async function responder(p: Peticion): Promise<Respuesta> {
+  let r: Respuesta
+  if (PROVEEDOR === 'claude') r = await responderClaude(p)
+  else if (PROVEEDOR === 'gemini') r = await responderGemini(p)
+  else throw new ErrorProveedor('otro', `Proveedor de IA no soportado: ${PROVEEDOR}`)
+  const escrito = separarFormularioEscrito(r.texto)
+  return { ...r, texto: escrito.texto, formulario: r.formulario ?? escrito.formulario }
 }
