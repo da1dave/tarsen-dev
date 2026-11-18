@@ -1,0 +1,8 @@
+destacado_1.jpg  <-  File:Minimal smooth steel edge (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+destacado_2.jpg  <-  File:Light and dark architecture (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+destacado_3.jpg  <-  File:Black and white computer desk (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+destacado_4.jpg  <-  File:Monochrome coffee and pencil (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+servicio_1.jpg  <-  File:Angled metal architecture (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+servicio_2.jpg  <-  File:Black white concrete interior (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+servicio_3.jpg  <-  File:Minimal vinyl player (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+nosotros.jpg  <-  File:Wall shadow (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)

@@ -1,0 +1,7 @@
+/* Capa de edición detallada: por encima de todo en la vista previa, con fuente y colores propios. */
+.marco { position: fixed; z-index: 2147483000; pointer-events: none; border: 2px solid #8b6cff; border-radius: 6px; box-shadow: 0 0 0 9999px rgba(11, 11, 14, 0.12); transition: all 0.12s ease-out; }
+.barra { position: fixed; z-index: 2147483001; display: flex; gap: 4px; padding: 4px; border-radius: 10px; background: #18181d; box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45); font-family: 'Urbanist', system-ui, sans-serif; }
+.barra button { padding: 8px 12px; border: 0; border-radius: 7px; background: transparent; color: #fff; font: 600 13px 'Urbanist', system-ui, sans-serif; cursor: pointer; white-space: nowrap; }
+.barra button:hover { background: #2a2a32; }
+.peligro { color: #ffb4b4 !important; }
+.aviso { position: fixed; z-index: 2147483001; left: 50%; bottom: 16px; translate: -50% 0; padding: 8px 16px; border-radius: 999px; background: rgba(24, 24, 29, 0.92); color: #fff; font: 600 13px 'Urbanist', system-ui, sans-serif; pointer-events: none; }

@@ -1,0 +1,174 @@
+/*
+ * Plantilla Áurea: oscura y cálida, con dorado como acento y tipografía serif (Cormorant Garamond).
+ * Las etiquetas «→ acá va… ←» usan el mismo color del texto que el ejemplo.
+ */
+.raiz {
+  --fondo: #120d08;
+  --crema: #f1e8d8;
+  --suave: #b9a98f;
+  --oro: #c9a46a;
+  --oro-claro: #e3c896;
+  --linea: rgba(201, 164, 106, 0.28);
+  --serif: 'Cormorant Garamond', 'Cormorant', Garamond, 'Times New Roman', serif;
+  --sy: 0;
+  --mx: 0;
+  --my: 0;
+  position: relative;
+  min-height: 100svh;
+  background: var(--fondo);
+  color: var(--crema);
+  font-family: var(--serif);
+}
+.hueco { font-style: italic; }
+
+/* ---------- Texto niebla ---------- */
+.niebla { cursor: default; }
+.palabra { display: inline-block; white-space: nowrap; }
+.pieza {
+  display: inline-block;
+  filter: blur(var(--b, 0px));
+  opacity: var(--o, 1);
+  transition: filter 0.6s cubic-bezier(0.2, 0.65, 0.3, 1), opacity 0.6s ease;
+}
+.niebla:not(.visible) .pieza { opacity: 0; }
+.visible .pieza { animation: niebla 1.8s cubic-bezier(0.2, 0.65, 0.3, 1) backwards; animation-delay: var(--d, 0ms); }
+@keyframes niebla {
+  from { opacity: 0; filter: blur(18px); transform: translateY(0.12em) scale(1.08); }
+  55% { opacity: 1; }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+
+/* ---------- Barra ---------- */
+.nav {
+  position: fixed;
+  z-index: 50;
+  inset: 0 0 auto 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 22px clamp(20px, 3vw, 44px);
+  transition: background 0.6s ease, padding 0.6s ease;
+}
+.navFondo { padding-top: 14px; padding-bottom: 14px; background: linear-gradient(rgba(18, 13, 8, 0.92), rgba(18, 13, 8, 0.6)); backdrop-filter: blur(10px); }
+.circulo { justify-self: start; display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--linea); border-radius: 50%; color: var(--oro-claro); transition: border-color 0.3s, background 0.3s; }
+.circulo:hover { border-color: var(--oro); background: rgba(201, 164, 106, 0.12); }
+.circulo svg { width: 20px; height: 20px; }
+.marca { max-width: 36vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--crema); text-decoration: none; font: 500 clamp(18px, 1.6vw, 22px) var(--serif); letter-spacing: 0.28em; text-transform: uppercase; text-align: center; }
+.enlaces { justify-self: end; display: flex; gap: clamp(14px, 2vw, 30px); }
+.enlaces a { color: var(--crema); text-decoration: none; font: 500 12.5px var(--fuente-texto); letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.65; transition: opacity 0.3s, color 0.3s; }
+.enlaces a:hover, .enlaces a[aria-current='true'] { opacity: 1; color: var(--oro-claro); }
+
+/* ---------- Portada ---------- */
+.portada { position: relative; min-height: 100svh; display: flex; align-items: center; overflow: hidden; }
+.portadaFondo {
+  position: absolute;
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+  filter: sepia(0.35) saturate(0.85) brightness(0.8) contrast(1.05);
+  transform: translate3d(calc(var(--mx) * -26px), calc(var(--sy) * 0.35px + var(--my) * -18px), 0) scale(1.06);
+  transition: filter 0.6s;
+  will-change: transform;
+  animation: respira 24s ease-in-out infinite alternate;
+}
+@keyframes respira { from { scale: 1; } to { scale: 1.06; } }
+.portadaVelo {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 20% 40%, rgba(18, 13, 8, 0.15), rgba(18, 13, 8, 0.75) 80%),
+    linear-gradient(90deg, rgba(18, 13, 8, 0.7) 0%, rgba(18, 13, 8, 0.2) 55%, rgba(18, 13, 8, 0.45) 100%),
+    linear-gradient(0deg, var(--fondo) 0%, rgba(18, 13, 8, 0) 30%);
+}
+.portadaTexto { position: relative; z-index: 2; width: min(780px, 92vw); margin-left: clamp(20px, 8vw, 140px); padding-top: 80px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.titulo { margin: 0; display: flex; flex-direction: column; align-items: center; line-height: 0.88; }
+.tituloCursiva { display: block; font: italic 400 clamp(56px, 8vw, 132px)/0.9 var(--serif); color: var(--crema); margin-bottom: -0.06em; }
+.tituloResto { display: block; margin: 0; font: 500 clamp(56px, 8.6vw, 148px)/0.9 var(--serif); letter-spacing: -0.01em; text-transform: uppercase; color: #fbf4e8; text-shadow: 0 0 40px rgba(255, 220, 160, 0.25); }
+.portadaSub { margin: 36px 0 0; max-width: 30ch; font: 400 clamp(20px, 1.8vw, 26px)/1.35 var(--serif); color: var(--crema); }
+.boton {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 36px;
+  padding: 14px 28px;
+  border: 1px solid var(--oro);
+  border-radius: 999px;
+  color: var(--crema);
+  text-decoration: none;
+  font: 500 13px var(--fuente-texto);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  box-shadow: 0 0 24px rgba(201, 164, 106, 0.15) inset;
+  transition: background 0.4s, color 0.4s;
+}
+.boton:hover { background: var(--oro); color: var(--fondo); }
+
+/* ---------- Comunes ---------- */
+.kicker { margin: 0 0 18px; color: var(--oro); font: 500 12.5px var(--fuente-texto); letter-spacing: 0.3em; text-transform: uppercase; }
+.h2 { margin: 0; font: 500 clamp(38px, 4.4vw, 68px)/1 var(--serif); text-transform: uppercase; letter-spacing: 0.01em; }
+.h2Grande { margin: 0; font: 400 clamp(40px, 5vw, 80px)/1.02 var(--serif); }
+.h3 { margin: 10px 0 8px; font: 500 clamp(24px, 2vw, 30px)/1.1 var(--serif); }
+.parrafo { margin: 26px 0 0; max-width: 46ch; font: 400 clamp(19px, 1.5vw, 22px)/1.55 var(--serif); color: var(--suave); }
+.parrafoChico { margin: 0; font: 400 18px/1.55 var(--serif); color: var(--suave); }
+.seccion { padding: 140px clamp(20px, 8vw, 140px); scroll-margin-top: 60px; }
+.cabCentrada { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 900px; margin: 0 auto 80px; }
+.cabCentrada .parrafo { text-align: center; }
+.centro { display: flex; justify-content: center; margin-top: 40px; }
+
+/* ---------- Fotos ---------- */
+.foto { position: relative; overflow: hidden; aspect-ratio: 3 / 2; background: #1d160f; }
+.foto img { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(0.2) saturate(0.9); transform: scale(1.08); opacity: 0; transition: opacity 1.6s ease, transform 2.4s cubic-bezier(0.2, 0.65, 0.3, 1), filter 2s ease; }
+.foto:not(.fotoVisible) img { filter: sepia(0.2) saturate(0.9) blur(14px); }
+.fotoVisible img { opacity: 1; transform: none; }
+.fotoAlta { aspect-ratio: 4 / 5; }
+.vacia { height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; border: 1px dashed var(--oro); color: var(--suave); text-align: center; font: italic 400 19px/1.4 var(--serif); }
+
+/* ---------- Destacados ---------- */
+.destacados { display: flex; flex-direction: column; gap: 140px; padding: 120px clamp(20px, 8vw, 140px) 40px; }
+.fila { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
+.invertida .foto { order: 2; }
+.romano, .fila .kicker { font-family: var(--serif); font-size: 22px; letter-spacing: 0.1em; color: var(--oro); }
+.enlace { display: inline-flex; gap: 10px; margin-top: 28px; color: var(--oro-claro); text-decoration: none; font: 500 13px var(--fuente-texto); letter-spacing: 0.18em; text-transform: uppercase; border-bottom: 1px solid var(--linea); padding-bottom: 6px; transition: border-color 0.3s; }
+.enlace:hover { border-color: var(--oro); }
+
+/* Sin foto: el texto ocupa la fila, centrado y con un ancho cómodo de lectura. */
+.fila.unaColumna, .nosotros.unaColumna { grid-template-columns: minmax(0, 820px); justify-content: center; }
+
+/* ---------- Servicios ---------- */
+.servicios { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(24px, 3vw, 48px); }
+.servicio { display: flex; flex-direction: column; }
+.romano { display: block; margin-top: 24px; }
+
+/* ---------- Nosotros ---------- */
+.nosotros { display: grid; grid-template-columns: 1fr 1.1fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
+.fotoNosotros { aspect-ratio: 4 / 5; }
+.datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 24px; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--linea); }
+.dato { display: flex; flex-direction: column; gap: 8px; }
+.datoValor { font: 400 clamp(44px, 4vw, 64px)/1 var(--serif); color: var(--oro-claro); }
+.datoEtiqueta { color: var(--suave); font: 400 17px/1.4 var(--serif); }
+
+/* ---------- Contacto ---------- */
+.contacto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 1100px; margin: 0 auto; border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
+.contacto > div { padding: 40px 32px; text-align: center; }
+.contacto > div + div { border-left: 1px solid var(--linea); }
+.contacto p { margin: 6px 0; color: var(--suave); font: 400 19px/1.5 var(--serif); }
+.contactoTitulo { margin: 0 0 14px; color: var(--oro); font: 500 12.5px var(--fuente-texto); letter-spacing: 0.24em; text-transform: uppercase; }
+
+/* ---------- Pie ---------- */
+.pie { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 64px 20px 48px; border-top: 1px solid var(--linea); color: var(--suave); font: 400 13px var(--fuente-texto); letter-spacing: 0.12em; }
+.pieMarca { color: var(--crema); font: 500 22px var(--serif); letter-spacing: 0.3em; text-transform: uppercase; }
+
+@media (max-width: 960px) {
+  .enlaces { display: none; }
+  .nav { grid-template-columns: auto 1fr auto; }
+  .fila, .nosotros { grid-template-columns: 1fr; }
+  .invertida .foto { order: 0; }
+  .servicios { grid-template-columns: 1fr; }
+  .contacto { grid-template-columns: 1fr; }
+  .contacto > div + div { border-left: 0; border-top: 1px solid var(--linea); }
+  .portadaTexto { margin: 0 auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pieza { animation: none !important; opacity: 1 !important; }
+  .portadaFondo { animation: none; }
+}

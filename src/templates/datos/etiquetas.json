@@ -1,0 +1,101 @@
+{
+  "nombre": "→ acá va el nombre de tu negocio ←",
+  "logo": "",
+  "acento": "#6c47ff",
+  "slides": [
+    {
+      "titulo": "→ acá va el nombre de tu negocio ←",
+      "texto": "→ acá va la info de tu negocio: qué haces y para quién ←",
+      "boton": "Ver más",
+      "href": "#servicios",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va la foto principal de tu negocio ←"
+    },
+    {
+      "titulo": "→ acá va tu eslogan ←",
+      "texto": "→ acá va lo que te hace diferente de la competencia ←",
+      "boton": "Conócenos",
+      "href": "#nosotros",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va una foto de tu equipo ←"
+    },
+    {
+      "titulo": "→ acá va tu servicio estrella ←",
+      "texto": "→ acá va una frase que venda tu servicio estrella ←",
+      "boton": "Ver servicios",
+      "href": "#servicios",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va una foto de tu servicio estrella ←"
+    },
+    {
+      "titulo": "→ acá va tu invitación a comprar ←",
+      "texto": "→ acá va tu horario y dónde te encuentran ←",
+      "boton": "Escríbenos",
+      "href": "#contacto",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va una foto de tu local ←"
+    }
+  ],
+  "serviciosIntro": "→ acá va una frase que resuma lo que ofreces ←",
+  "servicios": [
+    {
+      "titulo": "→ acá va el servicio 1 ←",
+      "texto": "→ acá va la descripción del servicio 1 ←",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va una foto del servicio 1 ←"
+    },
+    {
+      "titulo": "→ acá va el servicio 2 ←",
+      "texto": "→ acá va la descripción del servicio 2 ←",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va una foto del servicio 2 ←"
+    },
+    {
+      "titulo": "→ acá va el servicio 3 ←",
+      "texto": "→ acá va la descripción del servicio 3 ←",
+      "imagen": "",
+      "fotoEtiqueta": "→ acá va una foto del servicio 3 ←"
+    }
+  ],
+  "frase": "→ acá va una frase grande de tu marca ←",
+  "historiaTitulo": "→ acá va el título de tu historia ←",
+  "historia": "→ acá va la historia de tu negocio: cuándo empezó, qué los mueve y a quién atienden ←",
+  "historiaImagen": "",
+  "historiaFotoEtiqueta": "→ acá va una foto de los dueños o del equipo ←",
+  "datos": [
+    {
+      "valor": "→ 00 ←",
+      "etiqueta": "→ acá va un dato de tu negocio ←"
+    },
+    {
+      "valor": "→ 00 ←",
+      "etiqueta": "→ acá va otro dato de tu negocio ←"
+    },
+    {
+      "valor": "→ 00 ←",
+      "etiqueta": "→ acá va un tercer dato ←"
+    }
+  ],
+  "direccion": "→ acá va la dirección de tu negocio ←",
+  "horario": "→ acá va tu horario de atención ←",
+  "telefono": "→ acá van los números de contacto de tu negocio ←",
+  "whatsapp": "→ acá va tu WhatsApp ←",
+  "correo": "→ acá va el correo de tu negocio ←",
+  "redes": [
+    {
+      "red": "Instagram",
+      "usuario": "→ acá va tu usuario ←"
+    },
+    {
+      "red": "TikTok",
+      "usuario": "→ acá va tu usuario ←"
+    },
+    {
+      "red": "Facebook",
+      "usuario": "→ acá va tu página ←"
+    }
+  ],
+  "cta": "→ acá va tu llamado a la acción ←",
+  "ctaBoton": "Escríbenos por WhatsApp",
+  "waHref": "#contacto"
+}

@@ -1,0 +1,119 @@
+:root {
+  --tinta: #07051a;
+  --superficie: #141128;
+  --acento: #ff6f98;
+  --blanco: #ffffff;
+  --suave: #c9c3d9;
+  --linea: rgba(255, 255, 255, 0.14);
+
+  --fuente-titular: 'Inter Tight', 'Urbanist', system-ui, sans-serif;
+  --fuente-texto: 'Urbanist', system-ui, sans-serif;
+
+  --margen: 9vw;
+  --alto-nav: 84px;
+  --ease: cubic-bezier(0.16, 0.84, 0.24, 1);
+}
+
+@media (max-width: 760px) {
+  :root {
+    --margen: 6vw;
+    --alto-nav: 68px;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--tinta);
+  color: var(--blanco);
+  font-family: var(--fuente-texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
+
+.titular {
+  font-family: var(--fuente-titular);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-transform: lowercase;
+  margin: 0;
+}
+
+/*
+ * Tema "panel" (estilo Hostinger): fondo negro, superficies gris carbón, texto blanco
+ * y violeta solo como acento. Lo usan la app y las pestañas de la landing.
+ */
+.tema-panel {
+  --tinta: #0b0b0e;
+  --superficie: #18181d;
+  --superficie-2: #222228;
+  --blanco: #ffffff;
+  --suave: #a1a1ab;
+  --acento: #6c47ff;
+  --lavanda: #a594ff;
+  --linea: rgba(255, 255, 255, 0.08);
+  --radio: 12px;
+  color: var(--blanco);
+}
+
+/* Resplandor violeta: centro oscuro y luz que sube desde las esquinas inferiores. */
+.resplandor {
+  background:
+    radial-gradient(65% 65% at 0% 100%, rgba(150, 120, 255, 0.75), transparent 70%) fixed,
+    radial-gradient(65% 65% at 100% 100%, rgba(150, 120, 255, 0.75), transparent 70%) fixed,
+    radial-gradient(75% 50% at 50% 108%, rgba(108, 71, 255, 0.6), transparent 75%) fixed,
+    radial-gradient(900px 380px at 50% -140px, rgba(108, 71, 255, 0.32), transparent 70%) fixed,
+    linear-gradient(180deg, #0b0b0e 0%, #120d24 100%) fixed;
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/*
+ * Transición entre pestañas de la landing (View Transitions API, ver src/landing/Landing.tsx),
+ * con la lógica del carrusel del Hero: capas que se mueven a distinto ritmo.
+ *  - Fondo (root): la vista nueva se funde sobre la anterior mientras ambas se desplazan un poco.
+ *    La vieja no se desvanece (queda debajo) para que el fondo nunca se vea gris ni cortado.
+ *  - Contenido de cada pestaña (capa propia, view-transition-name): sale rápido y entra después,
+ *    así los textos de las dos vistas no se superponen.
+ * --vt-dir: 1 = hacia la izquierda (avanzar), -1 = hacia la derecha (retroceder).
+ */
+html[data-dir='adelante'] { --vt-dir: 1; }
+html[data-dir='atras'] { --vt-dir: -1; }
+
+::view-transition-old(root) { animation: vt-fondo-sale 0.9s cubic-bezier(0.16, 0.84, 0.24, 1) both; }
+::view-transition-new(root) { animation: vt-fondo-entra 0.9s cubic-bezier(0.16, 0.84, 0.24, 1) both; mix-blend-mode: normal; }
+/* Cualquier otra capa con view-transition-name es contenido de una pestaña (landing o plantillas). */
+::view-transition-old(*) { animation: vt-contenido-sale 0.35s cubic-bezier(0.4, 0, 1, 1) both; }
+::view-transition-new(*) { animation: vt-contenido-entra 0.85s cubic-bezier(0.16, 0.84, 0.24, 1) 0.28s both; }
+/* La barra de navegación no se mueve: solo funde el cambio de pestaña activa. */
+::view-transition-group(barra-nav) { animation-duration: 0.3s; }
+::view-transition-old(barra-nav) { animation: vt-funde-sale 0.3s ease both; }
+::view-transition-new(barra-nav) { animation: vt-funde-entra 0.3s ease both; }
+
+@keyframes vt-fondo-sale { to { transform: translateX(calc(var(--vt-dir, 1) * -4%)) scale(1.1); } }
+@keyframes vt-fondo-entra { from { opacity: 0; transform: translateX(calc(var(--vt-dir, 1) * 4%)) scale(1.1); } }
+@keyframes vt-contenido-sale { to { opacity: 0; transform: translateX(calc(var(--vt-dir, 1) * -48px)); } }
+@keyframes vt-funde-sale { to { opacity: 0; } }
+@keyframes vt-funde-entra { from { opacity: 0; } }
+@keyframes vt-contenido-entra { from { opacity: 0; transform: translateX(calc(var(--vt-dir, 1) * 72px)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

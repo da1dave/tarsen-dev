@@ -1,0 +1,8 @@
+fondo.jpg  <-  File:Wheat field sunset (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+destacado_2.jpg  <-  File:Warm light in office building (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+destacado_3.jpg  <-  File:Candle, antler and laptop (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+destacado_4.jpg  <-  File:Vintage watch and typewriter (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+servicio_1.jpg  <-  File:Typography, coffee and roses (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+servicio_2.jpg  <-  File:Writing the Moment (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+servicio_3.jpg  <-  File:Warm light in the dining room (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)
+nosotros.jpg  <-  File:Collection of antique lamps (Unsplash).jpg  (CC0, Wikimedia Commons; originalmente en Unsplash)

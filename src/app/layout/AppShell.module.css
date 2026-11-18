@@ -1,0 +1,85 @@
+/* Variables de color: clase global .tema-panel (src/styles/tokens.css). */
+.app {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--tinta);
+  color: var(--blanco);
+}
+
+.lateral {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 24px 16px 20px;
+  background: #111114;
+  border-right: 1px solid var(--linea);
+}
+.marca { display: flex; align-items: center; gap: 10px; padding: 4px 12px; text-decoration: none; }
+.marca img { height: 34px; width: auto; display: block; }
+.marca span { font-family: var(--fuente-titular); font-weight: 800; font-size: 20px; letter-spacing: -0.03em; }
+
+.menu, .cuenta { display: flex; flex-direction: column; gap: clamp(6px, 1.6vh, 14px); }
+.menu { flex: 1; }
+.cuenta { padding-top: 18px; border-top: 1px solid var(--linea); }
+
+.item {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  border-radius: var(--radio);
+  color: var(--suave);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+}
+.item:hover { background: var(--superficie-2); color: var(--blanco); }
+.item[aria-current='page'] { background: rgba(108, 71, 255, 0.16); color: var(--blanco); font-weight: 600; }
+.item[aria-current='page'] svg { color: var(--lavanda); }
+.item svg, .btn svg { width: 20px; height: 20px; flex: none; }
+.item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.pie { display: flex; flex-direction: column; }
+.btn {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 18px;
+  border-radius: var(--radio);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: transparent;
+  color: var(--blanco);
+  font: 600 14px var(--fuente-texto);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.btn:hover { background: var(--superficie-2); border-color: rgba(255, 255, 255, 0.24); }
+
+/* El fondo con resplandor viene de la clase global .resplandor. */
+.contenido { min-height: 100svh; }
+
+@media (max-width: 1000px) {
+  .app { grid-template-columns: 80px minmax(0, 1fr); }
+  .lateral { padding: 20px 12px; align-items: center; }
+  .marca { padding: 0; }
+  .marca span, .item span, .btn span { display: none; }
+  .item, .btn { justify-content: center; padding: 0; width: 52px; min-height: 48px; }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; padding-bottom: 68px; }
+  .lateral { position: fixed; z-index: 60; inset: auto 0 0 0; height: 68px; flex-direction: row; justify-content: space-around; gap: 0; padding: 6px; border-right: 0; border-top: 1px solid var(--linea); background: #111114; }
+  .marca { display: none; }
+  .menu, .cuenta { flex-direction: row; justify-content: space-around; gap: 0; }
+  .menu { flex: 1; }
+  .cuenta { padding: 0; border: 0; }
+  .item, .btn { width: 44px; min-height: 46px; }
+  .btn { border: 0; }
+}

@@ -1,0 +1,12 @@
+.pagina { min-height: 100svh; display: grid; place-items: center; padding: 110px 6vw 48px; background: linear-gradient(rgba(7,5,26,.72), rgba(7,5,26,.9)), url(/img/espacio_2.jpg) center / cover; }
+.tarjeta { width: min(440px, 100%); background: rgba(20, 17, 40, 0.82); backdrop-filter: blur(14px); border: 1px solid var(--linea); border-radius: 28px; padding: 36px 32px; }
+.tarjeta h1 { font-size: clamp(36px, 6vw, 52px); margin-bottom: 8px; }
+.sub { color: var(--suave); margin: 0 0 24px; }
+.campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; font-weight: 600; font-size: 14px; }
+.campo input { min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,.3); background: rgba(7,5,26,.6); color: var(--blanco); font: 400 16px var(--fuente-texto); }
+.campo input:focus { outline: 2px solid var(--acento); border-color: transparent; }
+.error { color: #ffb3c6; font-size: 14px; margin: 0 0 14px; }
+.btn { width: 100%; min-height: 52px; border: 0; border-radius: 999px; background: var(--acento); color: var(--tinta); font: 700 16px var(--fuente-texto); cursor: pointer; transition: filter .2s, transform .2s; }
+.btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.alt { margin: 20px 0 0; text-align: center; color: var(--suave); font-size: 15px; }
+.alt a { color: var(--blanco); font-weight: 600; }

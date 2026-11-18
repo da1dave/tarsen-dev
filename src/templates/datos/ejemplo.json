@@ -1,0 +1,101 @@
+{
+  "nombre": "Tarsen Dev",
+  "logo": "/img/logo_tarsen_blanco.png",
+  "acento": "#6c47ff",
+  "slides": [
+    {
+      "titulo": "Haz memorable tu marca",
+      "texto": "Diseño excepcional para tu marca, impulsado por nuestra IA.",
+      "boton": "Ver más",
+      "href": "#servicios",
+      "imagen": "/img/logo_tarsen_metalico.png",
+      "fotoEtiqueta": ""
+    },
+    {
+      "titulo": "Tu negocio, en órbita",
+      "texto": "Nos das tu logo, tus fotos y tus datos; la plantilla pone cada cosa en su lugar.",
+      "boton": "Conócenos",
+      "href": "#nosotros",
+      "imagen": "/img/planeta_anillos.png",
+      "fotoEtiqueta": ""
+    },
+    {
+      "titulo": "Lista para cualquier pantalla",
+      "texto": "Se ve impecable en celular, tablet y computador.",
+      "boton": "Ver servicios",
+      "href": "#servicios",
+      "imagen": "/img/celular.png",
+      "fotoEtiqueta": ""
+    },
+    {
+      "titulo": "Que te recuerden",
+      "texto": "Escríbenos y te mostramos tu página con los datos de tu negocio.",
+      "boton": "Contáctanos",
+      "href": "#contacto",
+      "imagen": "/img/planeta_roca.png",
+      "fotoEtiqueta": ""
+    }
+  ],
+  "serviciosIntro": "Eliges una plantilla, nuestra IA la llena con la información de tu negocio y nosotros la ponemos en línea.",
+  "servicios": [
+    {
+      "titulo": "Elige el diseño de tu web",
+      "texto": "Diseños ya probados y animados. Ves cómo funcionan antes de decidir.",
+      "imagen": "/img/celular.png",
+      "fotoEtiqueta": ""
+    },
+    {
+      "titulo": "Nuestra IA potencia tu página",
+      "texto": "Nos cuentas de tu negocio, subes tu logo y fotos, y nuestra IA llena textos, servicios y contacto.",
+      "imagen": "/img/logo_tarsen_oscuro.png",
+      "fotoEtiqueta": ""
+    },
+    {
+      "titulo": "Revisa y publica",
+      "texto": "Ajustas lo que quieras, apruebas y la ponemos en línea con tu dominio.",
+      "imagen": "/img/planeta_anillos.png",
+      "fotoEtiqueta": ""
+    }
+  ],
+  "frase": "Tu página lista, sin que tengas que programar.",
+  "historiaTitulo": "Hecho por Innovadores UL",
+  "historia": "Somos tres estudiantes de la Universidad Libre. Tarsen Dev nace para que los negocios pequeños tengan su propia página sin pagar un desarrollo a la medida.",
+  "historiaImagen": "/img/logo_tarsen_oscuro.png",
+  "historiaFotoEtiqueta": "",
+  "datos": [
+    {
+      "valor": "3",
+      "etiqueta": "plantillas: 1 lista y 2 en camino"
+    },
+    {
+      "valor": "3",
+      "etiqueta": "personas en el equipo"
+    },
+    {
+      "valor": "100%",
+      "etiqueta": "pensado para negocios pequeños"
+    }
+  ],
+  "direccion": "Bogotá, Colombia",
+  "horario": "Lunes a viernes (horario de ejemplo)",
+  "telefono": "+57 300 000 0000 (número de ejemplo)",
+  "whatsapp": "WhatsApp: +57 300 000 0000",
+  "correo": "hola@tarsen.example",
+  "redes": [
+    {
+      "red": "Instagram",
+      "usuario": "@tarsen.dev (ejemplo)"
+    },
+    {
+      "red": "TikTok",
+      "usuario": "@tarsen.dev (ejemplo)"
+    },
+    {
+      "red": "LinkedIn",
+      "usuario": "Tarsen Dev (ejemplo)"
+    }
+  ],
+  "cta": "¿Listo para lanzar tu negocio?",
+  "ctaBoton": "Escríbenos por WhatsApp",
+  "waHref": "https://wa.me/573000000000"
+}

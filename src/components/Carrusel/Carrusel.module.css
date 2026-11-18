@@ -1,0 +1,219 @@
+.heroe {
+  --mx: 0;
+  --my: 0;
+  position: relative;
+  height: 100svh;
+  min-height: 600px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--tinta);
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+
+.slide { position: absolute; inset: 0; pointer-events: none; }
+.slide.on { pointer-events: auto; }
+
+/* Capas: --o es la distancia a la diapositiva activa; cada capa viaja a distinta velocidad. */
+.capa {
+  position: absolute;
+  inset: -6%;
+  will-change: transform, opacity;
+  transition: transform 1s var(--ease), opacity 0.9s ease, translate 0.5s ease-out;
+}
+.fondo {
+  background-size: cover;
+  background-position: center;
+  transform: translate3d(0, calc(var(--o) * 22%), 0) scale(calc(1.12 - 0.12 * (1 - min(abs(var(--o)), 1))));
+  opacity: calc(1 - abs(var(--o)));
+  translate: calc(var(--mx) * 12px) calc(var(--my) * 8px);
+}
+.brillo {
+  transform: translate3d(0, calc(var(--o) * 45%), 0);
+  opacity: calc(1 - abs(var(--o)));
+  translate: calc(var(--mx) * 30px) calc(var(--my) * 20px);
+}
+.imagen {
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate3d(0, calc(var(--o) * 95%), 0) rotate(calc(var(--o) * 10deg)) scale(calc(0.86 + 0.14 * (1 - min(abs(var(--o)), 1))));
+  opacity: calc(1 - abs(var(--o)) * 1.4);
+  translate: calc(var(--mx) * -46px) calc(var(--my) * -30px);
+}
+
+.humo { position: absolute; border-radius: 50%; filter: blur(46px); opacity: 0.55; mix-blend-mode: screen; }
+.h1 { width: 30vw; height: 30vw; left: 46%; top: 14%; background: radial-gradient(circle, var(--c1), transparent 68%); }
+.h2 { width: 26vw; height: 32vw; left: 56%; top: 40%; background: radial-gradient(circle, var(--c2), transparent 66%); }
+.h3 { width: 18vw; height: 18vw; left: 42%; top: 50%; background: radial-gradient(circle, var(--c3), transparent 66%); }
+.slide:nth-of-type(1) { --c1: #ff5fa2; --c2: #8a5cff; --c3: #ffc2da; }
+.slide:nth-of-type(2) { --c1: #ff8a3d; --c2: #ff3d6e; --c3: #ffd9a8; }
+.slide:nth-of-type(3) { --c1: #3d8bff; --c2: #39e0ff; --c3: #cde6ff; }
+.slide:nth-of-type(4) { --c1: #2fe0b0; --c2: #5a7cff; --c3: #d2ffe1; }
+.on .h1 { animation: deriva 13s ease-in-out infinite alternate; }
+.on .h2 { animation: deriva 17s ease-in-out -4s infinite alternate-reverse; }
+.on .h3 { animation: deriva 11s ease-in-out -2s infinite alternate; }
+
+.velo {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(7, 5, 26, 0.62) 0%, rgba(7, 5, 26, 0.28) 42%, rgba(7, 5, 26, 0) 66%),
+    linear-gradient(0deg, rgba(7, 5, 26, 0.6) 0%, rgba(7, 5, 26, 0) 32%);
+}
+
+/* La figura queda en la franja alta-derecha para que el recuadro de texto nunca tape a la mascota. */
+.figura { position: relative; margin: -14vh 0 0 24vw; display: flex; align-items: center; justify-content: center; }
+.on .figura { animation: flota 7s ease-in-out infinite alternate; }
+.figura img { display: block; max-width: 100%; max-height: 46vh; width: auto; height: auto; object-fit: contain; user-select: none; }
+/* Zoom lento y lineal de la figura activa (1x a 1.3x); al salir de la diapositiva vuelve a su tamaño. */
+.figura img { scale: 1; transition: scale 1s var(--ease); }
+.on .figura img { animation: crece var(--dur) linear both; }
+.logo { width: min(38vw, 600px); }
+.logo img { max-height: 62vh; }
+.logo img { filter: drop-shadow(0 0 26px rgba(255, 150, 205, 0.85)) drop-shadow(0 0 90px rgba(150, 110, 255, 0.65)); }
+.anillos { width: min(44vw, 700px); }
+.anillos img { filter: drop-shadow(0 0 60px rgba(255, 140, 90, 0.35)); }
+.celular { width: min(18vw, 280px); }
+.celular img { filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5)); }
+.roca { width: min(30vw, 480px); }
+/* Foto del cliente (plantillas): tamaño intermedio con sombra suave. */
+.foto { width: min(34vw, 540px); }
+.foto img { border-radius: 24px; filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5)); }
+/* Recuadro de foto vacío (plantilla con etiquetas). */
+.vacia { width: min(34vw, 520px); aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; border: 2px dashed rgba(255, 255, 255, 0.45); border-radius: 24px; background: rgba(7, 5, 26, 0.45); color: rgba(255, 255, 255, 0.85); text-align: center; font-size: 15px; line-height: 1.4; }
+.vacia svg { width: 40px; height: 40px; }
+/* Texto de una plantilla sin llenar («→ acá va… ←»). */
+.hueco { color: var(--lavanda, #c4b5ff); font-style: italic; }
+/* Cada palabra del título va en una caja con overflow: hidden (para la animación de entrada);
+   la cursiva sobresale por los lados, así que se le da aire sin cambiar el espacio entre palabras. */
+.hueco .pal { padding: 0 0.16em 0.08em 0.08em; margin: 0 0.06em 0 -0.08em; }
+.roca img { filter: drop-shadow(0 0 70px rgba(80, 230, 190, 0.35)); }
+
+.titular {
+  position: absolute;
+  z-index: 8;
+  left: var(--margen);
+  top: 26%;
+  max-width: min(50vw, 780px);
+  font-size: clamp(48px, 7vw, 112px);
+  text-shadow: 0 2px 30px rgba(7, 5, 26, 0.35);
+  transform: translate3d(0, calc(var(--o) * 55%), 0);
+  opacity: calc(1 - abs(var(--o)) * 1.8);
+  transition: transform 1s var(--ease), opacity 0.7s ease;
+}
+/* La clase global .titular pone todo en minúscula; aquí se respeta la mayúscula inicial. */
+.heroe .titular { text-transform: none; }
+/* Títulos largos: letra algo menor y más ancho, para que queden en 2–3 líneas limpias. */
+.heroe .largo { font-size: clamp(40px, 5vw, 80px); line-height: 0.98; max-width: min(58vw, 900px); }
+.pal { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; margin-right: 0.22em; }
+.palIn { display: inline-block; transform: translateY(105%); animation: sube 0.95s var(--ease) both; }
+
+.apoyo {
+  position: absolute;
+  z-index: 8;
+  right: var(--margen);
+  bottom: 16%;
+  width: min(380px, 34vw);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 18px;
+  transform: translate3d(0, calc(var(--o) * 85%), 0);
+  opacity: calc(1 - abs(var(--o)) * 1.8);
+  transition: transform 1s var(--ease), opacity 0.7s ease;
+}
+.caja {
+  margin: 0;
+  background: rgba(7, 5, 26, 0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 18px 22px;
+  font-size: 19px;
+  line-height: 1.45;
+  text-align: right;
+}
+.mas {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  background: rgba(7, 5, 26, 0.25);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.3s, color 0.3s, transform 0.3s;
+}
+.mas:hover { background: var(--blanco); color: var(--tinta); transform: translateY(-2px); }
+.mas svg { width: 16px; height: 16px; }
+
+.wa {
+  position: absolute;
+  z-index: 20;
+  top: calc(var(--alto-nav) + 10px);
+  right: var(--margen);
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(7, 5, 26, 0.35);
+  transition: background 0.25s, transform 0.25s;
+}
+.wa:hover { background: rgba(255, 255, 255, 0.18); transform: translateY(-2px); }
+.wa svg { width: 20px; height: 20px; }
+
+.controles { position: absolute; z-index: 12; right: var(--margen); bottom: 40px; display: flex; align-items: center; gap: 6px; }
+.contador { font-family: var(--fuente-titular); font-weight: 600; font-size: 14px; letter-spacing: 0.06em; margin-right: 12px; }
+.contador b { font-size: 22px; }
+.sep { width: 1px; height: 46px; background: rgba(255, 255, 255, 0.55); margin: 0 4px; }
+.flecha { display: inline-grid; place-items: center; width: 46px; height: 46px; border: 0; background: transparent; color: var(--blanco); cursor: pointer; border-radius: 50%; transition: background 0.25s, opacity 0.25s; }
+.flecha:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
+.flecha:disabled { opacity: 0.35; cursor: default; }
+.flecha svg { width: 20px; height: 20px; }
+
+.barra { position: absolute; z-index: 12; inset: auto 0 0 0; height: 3px; background: rgba(255, 255, 255, 0.16); }
+.barra span { display: block; height: 100%; background: var(--blanco); transition: width 1s var(--ease); }
+
+.grano { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.12; mix-blend-mode: overlay; pointer-events: none; z-index: 3; }
+
+@keyframes crece { from { scale: 1; } to { scale: 1.3; } }
+@keyframes sube { from { transform: translateY(105%); } to { transform: none; } }
+@keyframes deriva {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2.5vw, -2vw) scale(1.08); }
+  100% { transform: translate(-2vw, 1.5vw) scale(0.96); }
+}
+@keyframes flota { from { translate: 0 -12px; } to { translate: 0 14px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .palIn { transform: none; }
+  .on .figura img { animation: none; }
+  .capa, .titular, .apoyo { translate: none; }
+}
+
+@media (max-width: 760px) {
+  .titular { left: 6vw; right: 6vw; top: 20%; max-width: none; font-size: clamp(40px, 11.5vw, 64px); }
+  .figura { margin: 6vh 0 0 0; }
+  .figura img { max-height: 34vh; }
+  .logo { width: 64vw; } .logo img { max-height: 44vh; } .foto, .vacia { width: 80vw; } .anillos { width: 84vw; } .celular { width: 30vw; } .roca { width: 56vw; }
+  .apoyo { left: 6vw; right: 6vw; width: auto; bottom: 96px; align-items: flex-start; }
+  .caja { font-size: 16px; text-align: left; padding: 14px 16px; }
+  .mas { min-height: 44px; padding: 0 20px; font-size: 13px; }
+  .controles { right: 4vw; bottom: 22px; }
+  .contador { display: none; }
+  .wa { top: auto; right: 4vw; bottom: 100px; display: none; }
+  .h1 { width: 60vw; height: 60vw; left: 20%; top: 40%; }
+  .h2 { width: 50vw; height: 60vw; left: 35%; top: 50%; }
+  .h3 { width: 40vw; height: 40vw; left: 5%; top: 55%; }
+}

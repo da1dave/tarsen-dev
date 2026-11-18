@@ -1,0 +1,11 @@
+/* Animación de escritura */
+.resto { visibility: hidden; }
+/* El cursor no ocupa espacio en la línea (no es un bloque en línea), así que nunca provoca un salto de línea. */
+.cursor { position: relative; animation: parpadeo 1s steps(1) infinite; }
+.cursor::after { content: ''; position: absolute; left: 2px; top: 50%; height: 0.95em; transform: translateY(-50%); border-left: 2px solid var(--lavanda); }
+.cursorFin { animation: parpadeo 1s steps(1) 3, apaga 0.4s 3s forwards; }
+@keyframes parpadeo { 50% { opacity: 0; } }
+@keyframes apaga { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .cursor { display: none; }
+}

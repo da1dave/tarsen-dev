@@ -1,0 +1,10 @@
+.tarjeta { display: flex; flex-direction: column; height: 100%; border-radius: 16px; background: var(--superficie); border: 1px solid var(--linea); overflow: hidden; text-decoration: none; color: inherit; transition: transform 0.3s var(--ease), border-color 0.2s, box-shadow 0.3s; }
+a.tarjeta:hover { transform: translateY(-4px); border-color: rgba(165, 148, 255, 0.45); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); }
+.apagada { opacity: 0.6; }
+.foto { position: relative; height: 200px; margin: 8px 8px 0; border-radius: 10px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.foto img { height: 78%; max-width: 70%; width: auto; object-fit: contain; }
+.etiqueta { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 8px; background: rgba(11, 11, 14, 0.82); color: #fff; font-size: 12px; font-weight: 600; }
+.info { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px 18px; }
+.info strong { font: 600 18px var(--fuente-titular); color: var(--blanco); }
+.info span { color: var(--suave); font-size: 14px; }
+.info .cta { margin-top: 10px; color: var(--lavanda); font-weight: 600; font-size: 14px; }

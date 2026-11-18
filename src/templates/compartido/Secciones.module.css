@@ -1,0 +1,70 @@
+/* Las plantillas usan el tema .tema-panel (src/styles/tokens.css); --acento llega de los datos del negocio. */
+.raiz { --lavanda: color-mix(in srgb, var(--acento) 55%, #ffffff); position: relative; min-height: 100svh; background: var(--tinta); color: var(--blanco); }
+.principal { position: relative; z-index: 1; }
+
+.sec { min-height: 100svh; padding: calc(var(--alto-nav) + 64px) var(--margen) 88px; }
+.centrada { display: flex; align-items: center; }
+/* Sección dentro de una página de scroll continuo (plantilla Manta). */
+.enPagina { min-height: 0; padding-top: 96px; padding-bottom: 96px; scroll-margin-top: var(--alto-nav); }
+.contenido { display: flex; flex-direction: column; gap: 56px; }
+
+.cab { max-width: 780px; }
+.kicker { margin: 0 0 14px; color: var(--lavanda); font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+.titulo { margin: 0; font: 700 clamp(34px, 4.4vw, 58px)/1.08 var(--fuente-titular); letter-spacing: -0.02em; }
+.sub { margin: 18px 0 0; max-width: 60ch; color: var(--suave); font-size: 18px; line-height: 1.55; }
+.txt { margin: 22px 0 36px; max-width: 48ch; color: var(--suave); font-size: 19px; line-height: 1.6; }
+.hueco { color: var(--color-hueco, var(--lavanda)); font-style: italic; }
+
+/* Servicios */
+.servicios { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 24px; }
+.tarjeta { display: flex; flex-direction: column; padding: 8px 8px 26px; border: 1px solid var(--linea); border-radius: 16px; background: var(--superficie); transition: transform 0.3s var(--ease), border-color 0.2s; }
+.tarjeta:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--lavanda) 45%, transparent); }
+.foto { position: relative; height: 200px; border-radius: 10px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
+.foto img { max-width: 70%; max-height: 84%; object-fit: contain; }
+.fotoGrande { height: min(520px, 60svh); border: 1px solid var(--linea); border-radius: 20px; }
+.fotoLlena img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; filter: none; }
+.fotoGrande img { max-width: 60%; filter: drop-shadow(0 0 40px color-mix(in srgb, var(--acento) 55%, transparent)); }
+.num { margin: 20px 16px 6px; color: var(--lavanda); font-size: 13px; font-weight: 600; letter-spacing: 0.06em; }
+.tarjeta h3 { margin: 0 16px 8px; font: 600 20px var(--fuente-titular); }
+.tarjeta p { margin: 0 16px; color: var(--suave); font-size: 16px; line-height: 1.55; }
+
+/* Recuadro de foto vacío */
+.vacia { width: calc(100% - 32px); height: calc(100% - 32px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px; border: 2px dashed rgba(255, 255, 255, 0.4); border-radius: 12px; background: rgba(7, 5, 26, 0.5); color: rgba(255, 255, 255, 0.85); text-align: center; font-size: 14px; line-height: 1.4; }
+.vacia svg { width: 34px; height: 34px; }
+
+/* Cierre */
+.cierre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding: 32px 40px; border: 1px solid color-mix(in srgb, var(--lavanda) 30%, transparent); border-radius: 20px; background: linear-gradient(120deg, color-mix(in srgb, var(--acento) 35%, transparent), color-mix(in srgb, var(--acento) 6%, transparent)); }
+.cierre h3 { margin: 0; font: 700 clamp(22px, 2.4vw, 30px) var(--fuente-titular); letter-spacing: -0.015em; }
+.accion { align-self: flex-start; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 26px; border-radius: var(--radio); background: var(--acento); color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; transition: filter 0.2s; }
+.btn:hover { filter: brightness(1.12); }
+
+/* Nosotros */
+.historia { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 64px; align-items: center; }
+.unaColumna { grid-template-columns: minmax(0, 760px); }
+.datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+.dato { display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 1px solid var(--linea); border-radius: 16px; background: var(--superficie); }
+.dato b { color: var(--lavanda); font: 700 32px/1 var(--fuente-titular); letter-spacing: -0.02em; }
+.dato > span { color: var(--suave); font-size: 14.5px; line-height: 1.4; }
+
+/* Contacto */
+.contacto { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.bloque { display: flex; flex-direction: column; gap: 8px; padding: 28px; border: 1px solid var(--linea); border-radius: 16px; background: var(--superficie); }
+.bloque h3 { margin: 6px 0 4px; font: 600 19px var(--fuente-titular); }
+.bloque p { margin: 0; color: var(--suave); font-size: 15.5px; line-height: 1.5; }
+.bloque b { color: var(--blanco); font-weight: 600; }
+.ico { display: grid; place-items: center; width: 46px; height: 46px; border-radius: var(--radio); background: color-mix(in srgb, var(--acento) 18%, transparent); color: var(--lavanda); }
+.ico svg { width: 22px; height: 22px; }
+
+/* Pie */
+.pie { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 28px var(--margen); border-top: 1px solid var(--linea); background: #111114; color: var(--suave); font-size: 14px; }
+
+@media (max-width: 900px) {
+  .historia { grid-template-columns: 1fr; gap: 40px; }
+  .fotoGrande { height: 320px; }
+  .contacto { grid-template-columns: 1fr; }
+}
+@media (max-width: 700px) {
+  .sec { padding-top: calc(var(--alto-nav) + 100px); }
+  .cierre { padding: 28px 24px; }
+}

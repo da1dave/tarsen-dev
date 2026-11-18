@@ -1,0 +1,13 @@
+.tarjeta { position: relative; display: flex; flex-direction: column; border: 1px solid var(--linea); border-radius: 16px; background: var(--superficie); overflow: hidden; transition: transform 0.3s var(--ease), border-color 0.2s; }
+.tarjeta:hover { transform: translateY(-4px); border-color: rgba(165, 148, 255, 0.45); }
+.enlace { display: flex; flex-direction: column; color: inherit; text-decoration: none; }
+.miniatura { position: relative; height: 160px; margin: 8px 8px 0; border-radius: 10px; background: #222228 center / cover; }
+.estado { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 8px; background: rgba(11, 11, 14, 0.82); color: #fff; font-size: 12px; font-weight: 600; }
+.publicado { background: #1f7a4d; }
+.info { display: flex; flex-direction: column; gap: 4px; padding: 14px 18px 18px; }
+.info strong { font: 600 17px var(--fuente-titular); }
+.info span { color: var(--suave); font-size: 14px; }
+.borrar { position: absolute; top: 18px; right: 18px; padding: 6px 12px; border: 0; border-radius: 8px; background: rgba(11, 11, 14, 0.82); color: #ffb4b4; font: 600 12px var(--fuente-texto); cursor: pointer; opacity: 0; transition: opacity 0.2s; }
+.tarjeta:hover .borrar, .borrar:focus-visible { opacity: 1; }
+.error { margin: 0; padding: 14px 18px; border-radius: var(--radio); background: rgba(255, 90, 90, 0.12); color: #ffb4b4; }
+@media (hover: none) { .borrar { opacity: 1; } }

@@ -1,0 +1,28 @@
+.pagina { padding: 64px clamp(20px, 5vw, 64px) 72px; max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+
+/* Encabezado del Inicio */
+.intro { display: flex; flex-direction: column; align-items: center; gap: 16px; padding-top: 8px; }
+.saludo { font: 700 clamp(32px, 4.2vw, 52px)/1.12 var(--fuente-titular); letter-spacing: -0.012em; text-align: center; margin: 0; max-width: 20ch; }
+.sub { margin: 0; max-width: 76ch; text-align: center; color: var(--suave); font-size: 18px; line-height: 1.55; }
+
+/* Encabezado de páginas internas */
+.titulo { font: 700 clamp(28px, 3vw, 36px)/1.15 var(--fuente-titular); letter-spacing: -0.02em; margin: 0; }
+.titulo::first-letter { text-transform: uppercase; }
+
+/* Cabecera de sección */
+.cab { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.cab h2 { font: 600 22px var(--fuente-titular); letter-spacing: -0.015em; margin: 0; }
+.cab a { display: inline-flex; align-items: center; gap: 2px; color: var(--lavanda); text-decoration: none; font-weight: 600; font-size: 15px; }
+.cab a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.cab svg { width: 18px; height: 18px; }
+
+.rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 24px; }
+.vacio { color: var(--suave); margin: 0; }
+
+/* Tarjeta de estado vacío / aviso */
+.sinProyectos { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; padding: 28px 32px; border: 1px solid var(--linea); border-radius: 16px; background: var(--superficie); }
+.sinProyectos p { margin: 0; max-width: 56ch; color: var(--suave); font-size: 16px; line-height: 1.55; }
+
+/* Botón principal (violeta sólido, texto blanco) */
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 28px; border-radius: var(--radio); background: var(--acento); color: #fff; font-weight: 600; font-size: 15px; text-decoration: none; transition: background 0.2s; }
+.btn:hover { background: #7d5cff; }

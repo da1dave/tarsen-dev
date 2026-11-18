@@ -1,0 +1,28 @@
+/* Va dentro de la burbuja de Tarsen (.burbujaIA), debajo de su mensaje. */
+.formulario { display: flex; flex-direction: column; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); white-space: normal; }
+.pregunta { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.pregunta legend { display: flex; flex-direction: column; gap: 2px; padding: 0; margin-bottom: 10px; color: var(--blanco); font: 600 15px/1.4 var(--fuente-texto); }
+.ayuda { color: var(--suave); font-weight: 400; font-size: 12.5px; }
+.opciones { display: flex; flex-direction: column; gap: 8px; }
+.opcion { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 42px; padding: 9px 14px; border: 1px solid rgba(165, 148, 255, 0.45); border-radius: 10px; background: rgba(255, 255, 255, 0.02); color: var(--blanco); font: 500 14.5px/1.35 var(--fuente-texto); text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.opcion:hover:not(:disabled) { border-color: var(--lavanda); background: rgba(108, 71, 255, 0.16); }
+.opcion:focus-visible { outline: 2px solid var(--lavanda); outline-offset: 2px; }
+.opcion:disabled { cursor: default; }
+.activa { border-color: var(--lavanda); background: rgba(108, 71, 255, 0.32); }
+.activa:hover:not(:disabled) { background: rgba(108, 71, 255, 0.4); }
+.marca { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border: 1.5px solid var(--lavanda); border-radius: 5px; color: #fff; font-size: 12px; font-weight: 700; }
+.activa .marca { background: var(--acento); border-color: var(--acento); }
+.texto { width: 100%; padding: 11px 14px; border: 1px solid var(--linea); border-radius: 10px; background: var(--superficie); color: var(--blanco); font: 400 15px var(--fuente-texto); }
+.texto:focus { outline: none; border-color: var(--lavanda); }
+.acciones { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.enviar { min-height: 42px; padding: 0 20px; border: 0; border-radius: 10px; background: var(--acento); color: #fff; font: 600 14px var(--fuente-texto); cursor: pointer; transition: background 0.2s, opacity 0.2s; }
+.enviar:hover:not(:disabled) { background: #7d5cff; }
+.enviar:disabled { opacity: 0.45; cursor: default; }
+.chatear { align-self: center; padding: 6px 4px; border: 0; background: transparent; color: var(--lavanda); font: 600 13.5px var(--fuente-texto); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.chatear:hover:not(:disabled) { color: var(--blanco); }
+.chatear:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Formularios de mensajes anteriores: se ven, pero apagados. */
+.pasado { opacity: 0.55; }
+.pasado .opcion { min-height: 36px; padding: 6px 12px; font-size: 13.5px; }
+.pasado .pregunta legend { font-size: 14px; }

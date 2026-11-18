@@ -1,0 +1,42 @@
+.nav {
+  view-transition-name: barra-nav;
+  position: fixed;
+  z-index: 50;
+  inset: 0 0 auto 0;
+  height: var(--alto-nav);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 var(--margen);
+  background: linear-gradient(rgba(7, 5, 26, 0.7), rgba(7, 5, 26, 0));
+}
+.marca { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.marca img { height: 44px; width: auto; display: block; }
+.marca span { font-family: var(--fuente-titular); font-weight: 800; font-size: 24px; letter-spacing: -0.04em; }
+.btn {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  background: rgba(7, 5, 26, 0.25);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background 0.3s, color 0.3s;
+}
+.btn:hover { background: var(--blanco); color: var(--tinta); }
+
+@media (max-width: 900px) {
+  .marca span { display: none; }
+}
+@media (max-width: 640px) {
+  .nav { flex-wrap: wrap; height: auto; min-height: var(--alto-nav); padding-top: 10px; padding-bottom: 6px; }
+  .marca img { height: 36px; }
+  .btn { padding: 0 14px; font-size: 13px; }
+  .nav > nav { order: 3; width: 100%; justify-content: center; }
+}

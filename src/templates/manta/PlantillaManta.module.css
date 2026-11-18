@@ -1,0 +1,113 @@
+/*
+ * Plantilla Manta: tema claro estilo unseen.co. Las variables reutilizan los nombres del tema
+ * (--blanco = color del texto) para que las secciones comunes (Nosotros, Contacto) se vean claras.
+ */
+.raiz {
+  --tinta: #efeeea;
+  --superficie: #ffffff;
+  --superficie-2: #f6f5f2;
+  --blanco: #121214;
+  --suave: #5c5c66;
+  --linea: rgba(18, 18, 20, 0.12);
+  --lavanda: color-mix(in srgb, var(--acento) 85%, #000000);
+  --color-hueco: currentColor; /* las etiquetas «→ acá va… ←» usan el mismo color de texto que el ejemplo */
+  --radio: 12px;
+  position: relative;
+  min-height: 100svh;
+  background: var(--tinta);
+  color: var(--blanco);
+}
+.principal { position: relative; z-index: 2; }
+
+/* ---------- Fondo claro con el logo que sigue al cursor ---------- */
+.fondo { --cx: 0; --cy: 0; position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.luz { position: absolute; border-radius: 50%; filter: blur(80px); transition: transform 1.4s cubic-bezier(0.16, 0.84, 0.24, 1); }
+.luz1 { width: 60vw; height: 60vw; left: -18vw; top: -22vw; background: color-mix(in srgb, var(--acento) 14%, transparent); transform: translate3d(calc(var(--cx) * 60px), calc(var(--cy) * 40px), 0); }
+.luz2 { width: 50vw; height: 50vw; right: -16vw; bottom: -20vw; background: color-mix(in srgb, var(--acento) 10%, #d9d7d0); transform: translate3d(calc(var(--cx) * -50px), calc(var(--cy) * -40px), 0); }
+.silueta {
+  position: absolute;
+  background: #121214;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  transition: transform 1.2s cubic-bezier(0.16, 0.84, 0.24, 1);
+  will-change: transform;
+}
+/* Logo con imagen propia: en blanco y negro y apagado, para que acompañe sin competir con el contenido. */
+.foto {
+  position: absolute;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: grayscale(1) contrast(0.85) brightness(1.15);
+  transition: transform 1.2s cubic-bezier(0.16, 0.84, 0.24, 1);
+  will-change: transform;
+}
+.foto.s1 { opacity: 0.09; }
+.foto.s2 { opacity: 0.1; filter: grayscale(1) contrast(0.85) brightness(1.15) blur(2px); }
+.foto.s3 { opacity: 0.11; filter: grayscale(1) contrast(0.85) brightness(1.15) blur(1px); }
+/* Tres profundidades: la grande se mueve poco, las pequeñas más (parallax). */
+.s1 { width: min(62vw, 900px); aspect-ratio: 377 / 458; left: 50%; top: 50%; margin: calc(min(62vw, 900px) * -0.6) 0 0 calc(min(62vw, 900px) * -0.5); opacity: 0.05; transform: translate3d(calc(var(--cx) * -30px), calc(var(--cy) * -24px), 0) rotate(-8deg); }
+.s2 { width: 22vw; aspect-ratio: 377 / 458; left: -5vw; top: 58%; opacity: 0.07; filter: blur(2px); transform: translate3d(calc(var(--cx) * 70px), calc(var(--cy) * 50px), 0) rotate(14deg); }
+.s3 { width: 15vw; aspect-ratio: 377 / 458; right: 2vw; top: 14%; opacity: 0.08; filter: blur(1px); transform: translate3d(calc(var(--cx) * 110px), calc(var(--cy) * 80px), 0) rotate(-18deg); }
+
+/* ---------- Lienzo WebGL ---------- */
+.lienzo { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
+/* Bloques que ya se dibujan en WebGL: el HTML queda invisible pero recibe clics, foco y lectores de pantalla.
+   Si se navega con teclado, el bloque enfocado vuelve a mostrarse. */
+.principal [data-pintado] { opacity: 0; }
+.principal [data-pintado]:focus-within { opacity: 1; }
+
+/* ---------- Barra ---------- */
+.nav { position: fixed; z-index: 50; inset: 0 0 auto 0; height: var(--alto-nav); display: flex; align-items: center; gap: 24px; padding: 0 clamp(20px, 3vw, 44px); background: linear-gradient(rgba(239, 238, 234, 0.92), rgba(239, 238, 234, 0)); }
+.marca { display: flex; align-items: center; gap: 12px; margin-right: auto; color: var(--blanco); text-decoration: none; }
+.marca img { height: 40px; width: auto; filter: brightness(0); }
+.marca span { font: 500 clamp(22px, 2vw, 30px) var(--fuente-titular); letter-spacing: -0.03em; }
+.enlaces { display: flex; gap: clamp(14px, 2vw, 32px); }
+.enlaces a { color: var(--blanco); text-decoration: none; font-size: 17px; font-weight: 500; opacity: 0.7; transition: opacity 0.2s; }
+.enlaces a:hover, .enlaces a[aria-current='true'] { opacity: 1; }
+.redondo { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #ffffff; color: var(--blanco); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08); transition: transform 0.3s cubic-bezier(0.16, 0.84, 0.24, 1); }
+.redondo:hover { transform: scale(1.06); }
+.redondo svg { width: 22px; height: 22px; }
+
+/* ---------- Portada ---------- */
+.portada { padding: calc(var(--alto-nav) + 48px) clamp(20px, 6vw, 110px) 40px; scroll-margin-top: 0; }
+.titulo { margin: 0 auto 72px; max-width: 16ch; text-align: center; font: 500 clamp(52px, 7.4vw, 124px)/1 var(--fuente-titular); letter-spacing: -0.045em; }
+
+/* ---------- Tarjetas con efecto tela ---------- */
+.rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 80px 48px; }
+.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 64px 32px; }
+.tarjeta { display: flex; flex-direction: column; gap: 18px; color: inherit; text-decoration: none; }
+.fila { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid rgba(18, 18, 20, 0.6); }
+.fila strong { display: block; font: 500 clamp(19px, 1.6vw, 24px)/1.2 var(--fuente-titular); letter-spacing: -0.015em; }
+.fila > div > span { display: block; margin-top: 4px; color: var(--suave); font-size: 16px; line-height: 1.4; }
+.fila .num { display: inline; margin: 0 6px 0 0; color: var(--lavanda); font-size: inherit; }
+.flecha { flex: none; font-size: 22px; transition: transform 0.4s cubic-bezier(0.16, 0.84, 0.24, 1); }
+.tarjeta:hover .flecha { transform: translate(4px, 4px); }
+.imagen { aspect-ratio: 16 / 10; border-radius: 4px; overflow: hidden; background: #d9d8d3; }
+.imagen img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+.vacia { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; border: 2px dashed rgba(18, 18, 20, 0.3); border-radius: 4px; background: #e6e5e0; color: var(--suave); text-align: center; font-size: 15px; line-height: 1.4; }
+.vacia svg { width: 36px; height: 36px; }
+
+/* ---------- Servicios ---------- */
+.bloque { padding: 120px clamp(20px, 6vw, 110px) 40px; scroll-margin-top: var(--alto-nav); }
+.cab { max-width: 760px; margin-bottom: 56px; }
+.kicker { margin: 0 0 14px; color: var(--lavanda); font-size: 13px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; }
+.h2 { margin: 0; font: 500 clamp(36px, 4.6vw, 68px)/1.05 var(--fuente-titular); letter-spacing: -0.035em; }
+.sub { margin: 18px 0 0; max-width: 58ch; color: var(--suave); font-size: 18px; line-height: 1.55; }
+.cierre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; margin-top: 96px; padding: 36px 40px; border-radius: 20px; background: #121214; color: #ffffff; }
+.cierre h3 { margin: 0; font: 500 clamp(24px, 2.6vw, 34px) var(--fuente-titular); letter-spacing: -0.02em; }
+.btn { display: inline-flex; align-items: center; min-height: 50px; padding: 0 28px; border-radius: 999px; background: #ffffff; color: #121214; font-weight: 600; text-decoration: none; transition: transform 0.3s cubic-bezier(0.16, 0.84, 0.24, 1); }
+.btn:hover { transform: translateY(-2px); }
+
+@media (max-width: 1000px) {
+  .tres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .enlaces { display: none; }
+}
+@media (max-width: 700px) {
+  .rejilla, .tres { grid-template-columns: 1fr; gap: 56px; }
+  .s1 { width: 110vw; margin: -66vw 0 0 -55vw; }
+}
