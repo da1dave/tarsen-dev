@@ -8,6 +8,7 @@ import Inicio from './app/home/Inicio'
 import PlantillasLista from './app/templates/PlantillasLista'
 import PlantillaVista from './app/templates/PlantillaVista'
 import Pronto from './app/shared/Pronto'
+import Perfil from './app/perfil/Perfil'
 import VistaPlantilla from './app/templates/VistaPlantilla'
 import ListaProyectos from './app/projects/ListaProyectos'
 import Editor from './app/projects/Editor'
@@ -34,8 +35,8 @@ export default function App() {
         <Route path="proyectos" element={<ListaProyectos />} />
         <Route path="proyectos/:id" element={<Editor />} />
         <Route path="notificaciones" element={<Pronto titulo="notificaciones" texto="Aquí te avisaremos cuando tu proyecto avance, nuestra IA termine o el equipo responda. Todavía no tienes avisos." />} />
-        <Route path="perfil" element={<Pronto titulo="tu perfil" texto="Próximamente: tus datos, tu plan y la forma de pago." />} />
-        <Route path="ia" element={<Pronto titulo="tarsen ia" texto="Próximamente: nuestra IA llenará la plantilla con los datos de tu negocio." />} />
+        <Route path="perfil" element={<Perfil />} />
+        <Route path="ia" element={<Navigate to="/app" replace />} />
       </Route>
       <Route path="/vista/proyecto/:pid" element={<Privada><VistaProyecto /></Privada>} />
       <Route path="/vista/:id/:modo" element={<Privada><VistaPlantilla /></Privada>} />

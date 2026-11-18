@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
+import Avatar from '../../components/Avatar'
 import Icono, { type NombreIcono } from '../../components/Iconos'
 import styles from './AppShell.module.css'
 
@@ -7,7 +8,6 @@ const ITEMS: { to: string; texto: string; icono: NombreIcono; fin?: boolean }[] 
   { to: '/app', texto: 'Inicio', icono: 'inicio', fin: true },
   { to: '/app/proyectos', texto: 'Proyectos', icono: 'proyectos' },
   { to: '/app/plantillas', texto: 'Plantillas', icono: 'plantillas' },
-  { to: '/app/ia', texto: 'Tarsen IA', icono: 'ia' },
 ]
 
 export default function AppShell() {
@@ -35,7 +35,7 @@ export default function AppShell() {
             <span>Notificaciones</span>
           </NavLink>
           <NavLink to="/app/perfil" className={styles.item} title={usuario?.correo}>
-            <Icono n="usuario" />
+            <Avatar nombre={usuario?.nombre ?? ''} src={usuario?.avatar} tam={24} />
             <span>{usuario?.nombre || 'Perfil'}</span>
           </NavLink>
         </div>
