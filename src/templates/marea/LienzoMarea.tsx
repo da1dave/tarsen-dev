@@ -10,7 +10,8 @@ import { useEffect, useRef, useState, type MutableRefObject } from 'react'
 export interface Escena { imagen: string; colores: [string, string, string] }
 
 /** `progreso`: posición en escenas (1.4 = 40 % de la transición de la escena 1 a la 2). */
-interface Props { escenas: Escena[]; progreso: MutableRefObject<number>; quieto: boolean; className?: string }
+/** `alAvanzar` recibe en cada cuadro el progreso que se está dibujando (el del agua, con su retardo). */
+interface Props { escenas: Escena[]; progreso: MutableRefObject<number>; quieto: boolean; className?: string; alAvanzar?: (p: number) => void }
 
 const VERTICE = `
 attribute vec2 aPos;
@@ -107,7 +108,9 @@ const aRgb = (hex: string): [number, number, number] => {
 
 interface Textura { tex: WebGLTexture; ancho: number; alto: number; listo: boolean; src: string }
 
-export default function LienzoMarea({ escenas, progreso, quieto, className }: Props) {
+export default function LienzoMarea({ escenas, progreso, quieto, className, alAvanzar }: Props) {
+  const avisar = useRef(alAvanzar)
+  avisar.current = alAvanzar
   const lienzo = useRef<HTMLCanvasElement>(null)
   const [sinWebgl, setSinWebgl] = useState(false)
   const actuales = useRef(escenas)
@@ -117,7 +120,14 @@ export default function LienzoMarea({ escenas, progreso, quieto, className }: Pr
   useEffect(() => {
     const canvas = lienzo.current!
     const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' })
-    if (!gl) { setSinWebgl(true); return }
+    if (!gl) {
+      // Sin WebGL: solo se informa el progreso para que cambien los textos.
+      setSinWebgl(true)
+      let r = 0
+      const seguir = () => { avisar.current?.(progreso.current); r = requestAnimationFrame(seguir) }
+      r = requestAnimationFrame(seguir)
+      return () => cancelAnimationFrame(r)
+    }
 
     const shader = (tipo: number, codigo: string) => {
       const s = gl.createShader(tipo)!
@@ -210,16 +220,27 @@ export default function LienzoMarea({ escenas, progreso, quieto, className }: Pr
 
     let raf = 0
     const inicio = performance.now()
+    // El agua sigue al scroll con retardo: aunque el scroll sea rápido, la marea sube despacio.
+    // RITMO: cuánto avanza por segundo hacia el scroll (más bajo = más lento). Depende del tiempo, no de los cuadros.
+    const RITMO = 1.1
+    let suavizado = progreso.current
+    let anterior = performance.now()
     const pedir = () => { if (!raf) raf = requestAnimationFrame(dibujar) }
     function dibujar(ahora: number) {
       raf = 0
       if (!visible) return
       const lista = actuales.current
-      const p = Math.max(0, Math.min(progreso.current, lista.length - 1))
+      const objetivo = Math.max(0, Math.min(progreso.current, lista.length - 1))
+      const dt = Math.min((ahora - anterior) / 1000, 0.1)
+      anterior = ahora
+      suavizado += (objetivo - suavizado) * (quieto ? 1 : 1 - Math.exp(-RITMO * dt))
+      if (Math.abs(objetivo - suavizado) < 0.0005) suavizado = objetivo
+      const p = suavizado
+      avisar.current?.(p)
       const i = Math.min(Math.floor(p), Math.max(lista.length - 2, 0))
       const local = p - i
       // La escena se queda quieta un rato y luego entra la siguiente.
-      const mezcla = lista.length > 1 ? Math.min(1, Math.max(0, (local - 0.2) / 0.75)) : 0
+      const mezcla = lista.length > 1 ? Math.min(1, Math.max(0, (local - 0.08) / 0.84)) : 0
       const suave = mezcla * mezcla * (3 - 2 * mezcla)
       fijarEscena(0, lista[i], gl!.TEXTURE0)
       fijarEscena(1, lista[i + 1], gl!.TEXTURE1)
@@ -231,7 +252,7 @@ export default function LienzoMarea({ escenas, progreso, quieto, className }: Pr
       raton.ry += (raton.y - raton.ry) * 0.06
       gl!.uniform2f(u('uMouse'), raton.rx, raton.ry)
       gl!.drawArrays(gl!.TRIANGLES, 0, 3)
-      if (!quieto || (mezcla > 0 && mezcla < 1)) pedir()
+      if (!quieto || suavizado !== objetivo) pedir()
       else setTimeout(pedir, 120) // sin animación: solo sigue el scroll
     }
     pedir()

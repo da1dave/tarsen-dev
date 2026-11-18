@@ -1,6 +1,6 @@
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react'
 import { Txt, esWeb, hueco } from '../compartido/Secciones'
 import { editable } from '../editable'
 import type { DatosPlantilla } from '../tipos'
@@ -18,6 +18,8 @@ import styles from './PlantillaMarea.module.css'
 const FUENTE = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap'
 const quieto = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const dos = (n: number) => String(n).padStart(2, '0')
+/** Scroll que ocupa cada capítulo, en altos de pantalla: más largo = la marea sube más despacio. */
+const LARGO = 1.8
 
 // ---------- Colores: tres tonos pastel por escena, girando alrededor del color de la marca ----------
 function aHsl(hex: string): [number, number, number] {
@@ -45,10 +47,51 @@ const colores = (acento: string, k: number): [string, string, string] => {
 }
 
 // ---------- Piezas ----------
-/* Foto que se llena como un vaso de agua al entrar en pantalla. */
+/*
+ * Foto que se llena como un vaso de agua al entrar en pantalla y que ondula como líquido al pasar
+ * el cursor: un filtro SVG (turbulencia + desplazamiento) que se anima solo mientras hace falta.
+ */
+function useLiquido() {
+  const id = `liquido${useId().replace(/[^a-zA-Z0-9]/g, '')}`
+  const turbulencia = useRef<SVGFETurbulenceElement>(null)
+  const desplazamiento = useRef<SVGFEDisplacementMapElement>(null)
+  const objetivo = useRef<HTMLElement | null>(null)
+  const estado = useRef({ encima: false, fuerza: 0, t: 0, raf: 0 })
+
+  useEffect(() => () => cancelAnimationFrame(estado.current.raf), [])
+
+  const cuadro = () => {
+    const e = estado.current
+    e.raf = 0
+    e.fuerza += ((e.encima ? 1 : 0) - e.fuerza) * 0.06
+    e.t += 0.016
+    const f = e.fuerza
+    turbulencia.current?.setAttribute('baseFrequency', `${(0.008 + Math.sin(e.t * 0.9) * 0.002).toFixed(4)} ${(0.022 + Math.cos(e.t * 0.7) * 0.006).toFixed(4)}`)
+    desplazamiento.current?.setAttribute('scale', (f * 34).toFixed(2))
+    if (objetivo.current) objetivo.current.style.filter = f > 0.01 ? `url(#${id})` : ''
+    if (e.encima || f > 0.01) e.raf = requestAnimationFrame(cuadro)
+  }
+  const mover = (encima: boolean) => {
+    if (quieto()) return
+    estado.current.encima = encima
+    if (!estado.current.raf) estado.current.raf = requestAnimationFrame(cuadro)
+  }
+
+  const filtro = (
+    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
+      <filter id={id} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+        <feTurbulence ref={turbulencia} type="fractalNoise" baseFrequency="0.008 0.022" numOctaves="2" seed="4" result="ruido" />
+        <feDisplacementMap ref={desplazamiento} in="SourceGraphic" in2="ruido" scale="0" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+  )
+  return { filtro, objetivo, eventos: { onPointerEnter: () => mover(true), onPointerLeave: () => mover(false) } }
+}
+
 function Llenado({ src, etiqueta, className = '' }: { src: string; etiqueta: string; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [lleno, setLleno] = useState(quieto)
+  const liquido = useLiquido()
   useEffect(() => {
     const el = ref.current
     if (!el || lleno) return
@@ -58,16 +101,19 @@ function Llenado({ src, etiqueta, className = '' }: { src: string; etiqueta: str
   }, [lleno])
   if (!src && !etiqueta) return null // foto quitada
   return (
-    <div ref={ref} className={`${styles.llenado} ${lleno ? styles.lleno : ''} ${className}`}>
-      {src ? <img src={src} alt="" loading="lazy" /> : <div className={styles.vacia} role="img" aria-label={etiqueta}><span>{etiqueta}</span></div>}
+    <div ref={ref} className={`${styles.llenado} ${lleno ? styles.lleno : ''} ${className}`} {...liquido.eventos}>
+      {liquido.filtro}
+      {src
+        ? <img ref={(el) => { liquido.objetivo.current = el }} src={src} alt="" loading="lazy" />
+        : <div ref={(el) => { liquido.objetivo.current = el }} className={styles.vacia} role="img" aria-label={etiqueta}><span>{etiqueta}</span></div>}
     </div>
   )
 }
 
 /* Borde superior de una sección: una ola que se mueve despacio. */
-function Ola({ invertida = false }: { invertida?: boolean }) {
+function Ola() {
   return (
-    <svg className={`${styles.ola} ${invertida ? styles.olaInvertida : ''}`} viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+    <svg className={styles.ola} viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
       <path className={styles.olaFondo} d="M0 70 C 240 20, 480 110, 720 64 S 1200 20, 1440 66 L1440 120 L0 120 Z" />
       <path className={styles.olaFrente} d="M0 86 C 260 40, 520 120, 760 80 S 1220 48, 1440 84 L1440 120 L0 120 Z" />
     </svg>
@@ -90,6 +136,7 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
   const progreso = useRef(0)
   const [activo, setActivo] = useState(0)
   const [conFondo, setConFondo] = useState(false)
+  const [enOscuro, setEnOscuro] = useState(false)
   const [sinMovimiento] = useState(quieto)
 
   const slides = d.slides
@@ -111,11 +158,9 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
       setConFondo(y > 30)
       const el = capitulos.current
       if (!el) return
-      const p = Math.max(0, (y - el.offsetTop) / window.innerHeight)
+      setEnOscuro(y > el.offsetTop + el.offsetHeight - 70)
+      const p = Math.max(0, (y - el.offsetTop) / (window.innerHeight * LARGO))
       progreso.current = p
-      const i = Math.floor(p)
-      const local = p - i
-      setActivo(Math.min(local > 0.6 ? i + 1 : i, n - 1))
     }
     if (sinMovimiento) {
       const nativo = () => alScroll(window.scrollY)
@@ -139,7 +184,7 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
   }
   const irACapitulo = (k: number) => {
     const el = capitulos.current
-    if (el) irA(el.offsetTop + k * window.innerHeight + 2)
+    if (el) irA(el.offsetTop + k * window.innerHeight * LARGO + 2)
   }
   const enlace = (e: MouseEvent<HTMLAnchorElement>, href: string) => {
     const id = href.replace('#', '')
@@ -157,7 +202,7 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
 
   return (
     <div ref={raiz} className={styles.raiz} style={{ '--acento': d.acento } as CSSProperties}>
-      <header className={`${styles.nav} ${conFondo ? styles.navFondo : ''}`}>
+      <header className={`${styles.nav} ${conFondo ? styles.navFondo : ''} ${enOscuro ? styles.navOscuro : ''}`}>
         <a href="#inicio" className={styles.marca} onClick={(e) => enlace(e, '#inicio')}>
           {d.logo ? <img src={d.logo} alt="" /> : null}
           <span className={hueco(d.nombre)}>{d.nombre}</span>
@@ -172,9 +217,16 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
 
       <main>
         {/* Capítulos: uno por destacado; la escena siguiente entra como agua */}
-        <section id="inicio" ref={capitulos} className={styles.capitulos} style={{ height: `${n * 100}svh` }} aria-label="Destacados">
+        <section id="inicio" ref={capitulos} className={styles.capitulos} style={{ height: `${((n - 1) * LARGO + 1) * 100}svh` }} aria-label="Destacados">
           <div className={styles.escenario}>
-            <LienzoMarea escenas={escenas} progreso={progreso} quieto={sinMovimiento} className={styles.lienzo} />
+            <LienzoMarea
+              escenas={escenas}
+              progreso={progreso}
+              quieto={sinMovimiento}
+              className={styles.lienzo}
+              // El texto cambia cuando el agua va por la mitad de la pantalla.
+              alAvanzar={(p) => { const i = Math.floor(p); setActivo(Math.min(p - i > 0.5 ? i + 1 : i, n - 1)) }}
+            />
             {slides.map((s, k) => (
               <article
                 key={k}
@@ -207,9 +259,13 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
           </div>
         </section>
 
+        {/* Debajo de los capítulos todo es "profundo": oscuro, con luces de color que flotan */}
+        <div className={styles.profundo}>
+        <Ola />
+        <div className={styles.manchas} aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+
         {/* Servicios */}
         <section id="servicios" className={styles.seccion} aria-labelledby="m-serv">
-          <Ola />
           <div className={styles.contenido}>
             <header className={styles.cabecera}>
               {etiqueta('Servicios')}
@@ -253,8 +309,6 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
 
         {/* Contacto */}
         <section id="contacto" className={styles.contacto} aria-labelledby="m-cont">
-          <Ola invertida />
-          <div className={styles.manchas} aria-hidden="true"><i /><i /><i /></div>
           <div className={styles.contenido}>
             <header className={styles.cabecera}>
               {etiqueta('Contacto')}
@@ -282,6 +336,7 @@ export default function PlantillaMarea({ datos: d }: { datos: DatosPlantilla }) 
             </div>
           </div>
         </section>
+        </div>
       </main>
 
       <footer className={styles.pie}>

@@ -5,14 +5,12 @@
 .raiz {
   --tinta: #1a1530;
   --tinta-suave: #4c4566;
-  --claro: color-mix(in oklab, var(--acento) 7%, #fbfaff);
-  --claro-2: color-mix(in oklab, var(--acento) 14%, #f4f1ff);
   --oscuro: color-mix(in oklab, var(--acento) 22%, #120f22);
   --linea: color-mix(in oklab, var(--acento) 22%, transparent);
   --titulo: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
   --texto: var(--fuente-texto, 'Inter', system-ui, sans-serif);
   position: relative;
-  background: var(--claro);
+  background: var(--oscuro);
   color: var(--tinta);
   font-family: var(--texto);
   overflow-x: clip; /* las olas son más anchas que la pantalla */
@@ -30,6 +28,10 @@
   padding: 18px clamp(16px, 3vw, 40px);
   transition: background 0.5s ease, padding 0.5s ease, box-shadow 0.5s ease;
 }
+.navOscuro { background: rgba(18, 15, 34, 0.5) !important; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) !important; }
+.navOscuro .marca, .navOscuro .enlaces a { color: #fff; }
+.navOscuro .marca img { filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.7)); }
+.navOscuro .pildora { background: #fff; color: var(--tinta); }
 .navFondo { padding-top: 12px; padding-bottom: 12px; background: rgba(255, 255, 255, 0.42); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
 .marca { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--tinta); text-decoration: none; font: 700 clamp(17px, 1.5vw, 21px) var(--titulo); letter-spacing: -0.01em; }
 .marca img { width: 34px; height: 34px; object-fit: contain; }
@@ -88,31 +90,41 @@
 .oculto { opacity: 0; }
 @keyframes bajar { 50% { transform: translateY(5px); } }
 
-/* ---------- Secciones ---------- */
-.seccion { position: relative; background: var(--claro); padding: clamp(72px, 10vw, 140px) 0; }
-.nosotros { background: var(--claro-2); }
+/* ---------- Debajo de los capítulos: profundo y luminoso ---------- */
+.profundo { position: relative; isolation: isolate; background: var(--oscuro); color: #fff; }
+.seccion { position: relative; padding: clamp(72px, 10vw, 140px) 0; }
 .contenido { position: relative; width: min(1180px, 100% - 2 * clamp(16px, 5vw, 80px)); margin: 0 auto; }
 .cabecera { max-width: 760px; margin: 0 auto clamp(40px, 6vw, 72px); text-align: center; }
-.etiqueta { display: inline-block; margin: 0 0 18px; padding: 6px 14px; border: 1px solid var(--linea); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tinta-suave); }
+.etiqueta { display: inline-block; margin: 0 0 18px; padding: 6px 14px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255, 255, 255, 0.75); }
 .h2 { margin: 0; font: 700 clamp(30px, 4.2vw, 56px) / 1.03 var(--titulo); letter-spacing: -0.03em; text-wrap: balance; }
 .h2Grande { margin: 0; font: 700 clamp(36px, 6vw, 84px) / 1 var(--titulo); letter-spacing: -0.035em; text-wrap: balance; }
 .h3 { margin: 6px 0 0; font: 700 clamp(20px, 1.8vw, 24px) / 1.2 var(--titulo); letter-spacing: -0.015em; }
-.parrafo { margin: 18px auto 0; max-width: 60ch; font-size: clamp(16px, 1.25vw, 18px); line-height: 1.65; color: var(--tinta-suave); }
-.parrafoChico { margin: 10px 0 0; font-size: 15.5px; line-height: 1.6; color: var(--tinta-suave); }
+.parrafo { margin: 18px auto 0; max-width: 60ch; font-size: clamp(16px, 1.25vw, 18px); line-height: 1.65; color: rgba(255, 255, 255, 0.72); }
+.parrafoChico { margin: 10px 0 0; font-size: 15.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.68); }
 
-/* Ola en el borde superior */
+/* Ola: el borde de lo profundo, que sube sobre los capítulos */
 .ola { position: absolute; left: -3%; bottom: calc(100% - 1px); width: 106%; height: clamp(50px, 7vw, 110px); pointer-events: none; }
-.olaFondo { fill: var(--claro); opacity: 0.5; transform-origin: bottom; animation: mecer 7s ease-in-out infinite; }
-.olaFrente { fill: var(--claro); transform-origin: bottom; animation: mecer 5s ease-in-out infinite reverse; }
-.olaInvertida .olaFondo, .olaInvertida .olaFrente { fill: var(--oscuro); }
+.olaFondo { fill: var(--oscuro); opacity: 0.5; transform-origin: bottom; animation: mecer 7s ease-in-out infinite; }
+.olaFrente { fill: var(--oscuro); transform-origin: bottom; animation: mecer 5s ease-in-out infinite reverse; }
 @keyframes mecer { 50% { transform: scaleY(0.82) translateX(-1.5%); } }
+
+/* Luces de color que flotan detrás de todo lo profundo */
+.manchas { position: absolute; inset: 0; z-index: -1; overflow: hidden; filter: blur(80px); opacity: 0.5; }
+.manchas i { position: absolute; width: 44vw; height: 44vw; max-width: 760px; max-height: 760px; border-radius: 50%; animation: flotar 20s ease-in-out infinite; }
+.manchas i:nth-child(1) { left: -12%; top: 2%; background: var(--acento); }
+.manchas i:nth-child(2) { right: -14%; top: 16%; background: color-mix(in oklab, var(--acento), #3fe0d0 60%); animation-delay: -5s; }
+.manchas i:nth-child(3) { left: 25%; top: 38%; background: color-mix(in oklab, var(--acento), #ff8fc6 60%); animation-delay: -10s; }
+.manchas i:nth-child(4) { left: -10%; top: 58%; background: color-mix(in oklab, var(--acento), #6aa8ff 55%); animation-delay: -15s; }
+.manchas i:nth-child(5) { right: -10%; top: 72%; background: var(--acento); animation-delay: -8s; }
+.manchas i:nth-child(6) { left: 30%; top: 88%; background: color-mix(in oklab, var(--acento), #ff8fc6 60%); animation-delay: -3s; }
+@keyframes flotar { 33% { transform: translate(6%, -8%) scale(1.1); } 66% { transform: translate(-6%, 6%) scale(0.92); } }
 
 /* Servicios */
 .servicios { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: clamp(18px, 2.4vw, 32px); }
-.servicio { display: flex; flex-direction: column; padding: 14px 14px 26px; border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 26px; background: rgba(255, 255, 255, 0.55); box-shadow: 0 20px 60px color-mix(in oklab, var(--acento) 12%, transparent); transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.servicio:hover { transform: translateY(-6px); }
+.servicio { display: flex; flex-direction: column; padding: 14px 14px 26px; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 26px; background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12); transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s; }
+.servicio:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.3); }
 .servicio > :not(.llenado) { padding: 0 10px; }
-.servNumero { margin-top: 20px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.18em; color: var(--acento); }
+.servNumero { margin-top: 20px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.18em; color: color-mix(in oklab, var(--acento), #fff 45%); }
 
 /* Foto que se llena como agua: una máscara con borde de ola que sube. */
 .llenado {
@@ -121,7 +133,7 @@
   aspect-ratio: 4 / 3;
   border-radius: 18px;
   overflow: hidden;
-  background: color-mix(in oklab, var(--acento) 10%, #fff);
+  background: rgba(255, 255, 255, 0.05);
 }
 .llenado img, .vacia {
   width: 100%;
@@ -134,7 +146,9 @@
   transition: -webkit-mask-position 1.6s cubic-bezier(0.3, 0.7, 0.2, 1), mask-position 1.6s cubic-bezier(0.3, 0.7, 0.2, 1), transform 2.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .lleno img, .lleno .vacia { -webkit-mask-position: 0 100%; mask-position: 0 100%; transform: none; }
-.vacia { display: grid; place-items: center; padding: 20px; background: linear-gradient(135deg, color-mix(in oklab, var(--acento) 30%, #fff), color-mix(in oklab, var(--acento) 12%, #fff)); text-align: center; font-size: 14px; font-style: italic; color: var(--tinta-suave); }
+.vacia { display: grid; place-items: center; padding: 20px; background: radial-gradient(120% 90% at 20% 10%, color-mix(in oklab, var(--acento) 60%, #1b1640), color-mix(in oklab, var(--acento) 12%, #120f22)); text-align: center; font-size: 14px; font-style: italic; color: rgba(255, 255, 255, 0.72); }
+/* Al pasar el cursor la foto crece un poco: así el borde que mueve el líquido no se ve. */
+.lleno:hover img, .lleno:hover .vacia { transform: scale(1.07); transition-duration: 1.6s, 1.6s, 0.9s; }
 
 /* Nosotros */
 .historia { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: clamp(32px, 6vw, 96px); }
@@ -142,19 +156,12 @@
 .unaColumna { grid-template-columns: 1fr; max-width: 760px; }
 .fotoHistoria { aspect-ratio: 4 / 5; border-radius: 32px; }
 .cifras { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
-.cifra { flex: 1 1 150px; padding: 18px 20px; border: 1px solid rgba(255, 255, 255, 0.85); border-radius: 20px; background: rgba(255, 255, 255, 0.6); }
-.cifra strong { display: block; font: 700 clamp(30px, 3.2vw, 42px) / 1 var(--titulo); letter-spacing: -0.03em; color: var(--acento); }
-.cifra > span { display: block; margin-top: 8px; font-size: 14px; line-height: 1.45; color: var(--tinta-suave); }
+.cifra { flex: 1 1 150px; padding: 18px 20px; border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 20px; background: rgba(255, 255, 255, 0.06); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.cifra strong { display: block; font: 700 clamp(30px, 3.2vw, 42px) / 1 var(--titulo); letter-spacing: -0.03em; color: color-mix(in oklab, var(--acento), #fff 40%); }
+.cifra > span { display: block; margin-top: 8px; font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, 0.68); }
 
 /* Contacto */
-.contacto { position: relative; isolation: isolate; padding: clamp(80px, 11vw, 150px) 0 clamp(60px, 8vw, 100px); background: var(--oscuro); color: #fff; }
-.contacto .etiqueta { border-color: rgba(255, 255, 255, 0.25); color: rgba(255, 255, 255, 0.75); }
-.manchas { position: absolute; inset: 0; z-index: -1; overflow: hidden; filter: blur(70px); opacity: 0.55; }
-.manchas i { position: absolute; width: 46vw; height: 46vw; border-radius: 50%; animation: flotar 18s ease-in-out infinite; }
-.manchas i:nth-child(1) { left: -10%; top: 10%; background: var(--acento); }
-.manchas i:nth-child(2) { right: -12%; top: 25%; background: color-mix(in oklab, var(--acento), #3fe0d0 60%); animation-delay: -6s; }
-.manchas i:nth-child(3) { left: 30%; bottom: -30%; background: color-mix(in oklab, var(--acento), #ff8fc6 60%); animation-delay: -12s; }
-@keyframes flotar { 33% { transform: translate(6%, -8%) scale(1.1); } 66% { transform: translate(-6%, 6%) scale(0.92); } }
+.contacto { position: relative; padding: clamp(80px, 11vw, 150px) 0 clamp(60px, 8vw, 100px); }
 .botonGrande { display: inline-flex; align-items: center; gap: 10px; margin-top: 32px; padding: 16px 28px; border-radius: 999px; background: #fff; color: var(--tinta); text-decoration: none; font-weight: 700; font-size: 16px; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .botonGrande:hover { transform: translateY(-3px) scale(1.02); }
 .botonGrande svg { width: 20px; height: 20px; }
