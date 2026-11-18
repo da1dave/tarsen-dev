@@ -42,7 +42,7 @@ export default function VistaProyecto() {
     <Suspense fallback={fondo}>
       <Componente datos={prepararDatos(datos)} />
       {edicion && (
-        <CapaEdicion alAccion={(accion: Accion, destino: string) => window.parent.postMessage({ tipo: 'tarsen:accion', accion, destino }, window.location.origin)} />
+        <CapaEdicion alAccion={(accion: Accion, destino: string, archivo?: File) => window.parent.postMessage({ tipo: 'tarsen:accion', accion, destino, archivo }, window.location.origin)} />
       )}
     </Suspense>
   )

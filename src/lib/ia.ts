@@ -1,5 +1,6 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import type { DatosPlantilla } from '../templates/tipos'
+import type { Foto } from './fotos'
 import { db } from './supabase'
 
 /* Chat con nuestra IA: los mensajes los guarda y procesa la función chat-plantilla de Supabase. */
@@ -17,6 +18,8 @@ export interface MensajeChat {
   texto: string
   cambios?: { campo: string; valor: string }[]
   formulario?: Pregunta[] | null
+  /** fotos que el usuario adjuntó */
+  fotos?: Foto[]
 }
 
 export interface RespuestaIA {
@@ -32,21 +35,23 @@ export interface RespuestaIA {
 export async function cargarMensajes(proyectoId: string): Promise<MensajeChat[]> {
   const { data, error } = await db()
     // Solo las partes que se muestran (el contenido también guarda una copia de la página, datosAntes).
-    .from('mensajes').select('id, rol, texto:contenido->>texto, cambios:contenido->cambios, formulario:contenido->formulario')
+    .from('mensajes').select('id, rol, texto:contenido->>texto, cambios:contenido->cambios, formulario:contenido->formulario, fotos:contenido->fotos')
     .eq('proyecto_id', proyectoId).order('id', { ascending: true })
   if (error) throw error
   return (data ?? []).map((m) => ({
     id: m.id, rol: m.rol, texto: m.texto ?? '',
     cambios: (m.cambios ?? undefined) as MensajeChat['cambios'], formulario: (m.formulario ?? null) as Pregunta[] | null,
+    fotos: (m.fotos ?? undefined) as Foto[] | undefined,
   }))
 }
 
 /**
  * Envía un mensaje; si falla, lanza un Error con un texto listo para mostrar.
- * Con `editarDesde` reemplaza ese mensaje del usuario (y borra los siguientes).
+ * Con `editarDesde` reemplaza ese mensaje del usuario (y borra los siguientes; conserva sus fotos).
+ * `fotos`: nombres de las fotos recién subidas que van con el mensaje.
  */
-export async function enviarMensaje(proyectoId: string, mensaje: string, editarDesde?: number): Promise<RespuestaIA> {
-  const { data, error } = await db().functions.invoke<RespuestaIA>('chat-plantilla', { body: { proyectoId, mensaje, editarDesde } })
+export async function enviarMensaje(proyectoId: string, mensaje: string, editarDesde?: number, fotos?: string[]): Promise<RespuestaIA> {
+  const { data, error } = await db().functions.invoke<RespuestaIA>('chat-plantilla', { body: { proyectoId, mensaje, editarDesde, fotos } })
   if (error) {
     if (error instanceof FunctionsHttpError) {
       const cuerpo = await error.context.json().catch(() => null)

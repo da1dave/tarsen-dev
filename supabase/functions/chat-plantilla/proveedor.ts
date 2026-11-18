@@ -8,7 +8,8 @@ import Anthropic from 'npm:@anthropic-ai/sdk@1.4.0'
  * con curl al configurar la clave.
  */
 
-export interface MensajeHistorial { rol: 'usuario' | 'asistente'; texto: string }
+/** `imagenes`: URLs públicas de fotos que el usuario adjuntó en este mensaje (solo Claude las ve). */
+export interface MensajeHistorial { rol: 'usuario' | 'asistente'; texto: string; imagenes?: string[] }
 export interface Cambio { campo: string; valor: string }
 export interface Pregunta { pregunta: string; tipo: 'opciones' | 'varias' | 'texto'; opciones: string[] }
 export interface Respuesta { texto: string; cambios: Cambio[]; formulario?: Pregunta[]; tokensEntrada: number; tokensSalida: number }
@@ -187,7 +188,7 @@ async function responderClaude({ sistema, historial, campos }: Peticion): Promis
   const herramientas: Anthropic.Tool[] = [
     {
       name: NOMBRE_HERRAMIENTA,
-      description: 'Cambia textos, color y visibilidad de elementos de la página del negocio. Úsala cada vez que haya información nueva o el usuario pida un ajuste.',
+      description: 'Cambia textos, fotos, color y visibilidad de elementos de la página del negocio. Úsala cada vez que haya información nueva o el usuario pida un ajuste.',
       strict: true,
       input_schema: {
         type: 'object',
@@ -199,7 +200,7 @@ async function responderClaude({ sistema, historial, campos }: Peticion): Promis
               type: 'object',
               properties: {
                 campo: { type: 'string', enum: campos, description: 'Ruta del campo a cambiar' },
-                valor: { type: 'string', description: 'Nuevo texto del campo, en español' },
+                valor: { type: 'string', description: 'Nuevo texto del campo, en español (en campos de foto: el nombre de una foto subida)' },
               },
               required: ['campo', 'valor'],
               additionalProperties: false,
@@ -249,7 +250,15 @@ async function responderClaude({ sistema, historial, campos }: Peticion): Promis
   // La conversación debe empezar con un mensaje del usuario (el historial se recorta a los últimos 20).
   const inicio = historial.findIndex((m) => m.rol === 'usuario')
   const mensajes: Anthropic.MessageParam[] = historial.slice(Math.max(inicio, 0))
-    .map((m) => ({ role: m.rol === 'usuario' ? 'user' : 'assistant', content: m.texto }))
+    .map((m): Anthropic.MessageParam => m.imagenes?.length
+      ? {
+        role: 'user',
+        content: [
+          ...m.imagenes.map((url) => ({ type: 'image' as const, source: { type: 'url' as const, url } })),
+          { type: 'text' as const, text: m.texto },
+        ],
+      }
+      : { role: m.rol === 'usuario' ? 'user' : 'assistant', content: m.texto })
 
   let tokensEntrada = 0
   let tokensSalida = 0

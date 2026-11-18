@@ -55,6 +55,16 @@ export function cambiarFoto(d: DatosPlantilla, destino: string, mostrar: boolean
   return c
 }
 
+/** Pone una foto (URL ya subida) en un elemento o en Nosotros, y la vuelve visible. */
+export function ponerFoto(d: DatosPlantilla, destino: string, url: string) {
+  const c = copiar(d)
+  if (destino === 'historiaFoto') { c.historiaImagen = url; c.historiaSinFoto = false; return c }
+  const s = separar(destino)
+  if (!s || (s.lista !== 'slides' && s.lista !== 'servicios')) return d
+  Object.assign(items(c, s.lista)[s.i], { imagen: url, sinFoto: false })
+  return c
+}
+
 export function mostrar(d: DatosPlantilla, destino: string) {
   const s = separar(destino)
   if (!s) return d

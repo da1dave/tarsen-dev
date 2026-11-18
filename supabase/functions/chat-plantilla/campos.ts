@@ -1,7 +1,8 @@
 /*
  * Campos de la plantilla que nuestra IA puede cambiar, con su descripción para el modelo.
  * Textos, y además mostrar u ocultar elementos y sus fotos (valor "si" / "no"); nunca se borra contenido.
- * Las imágenes, los enlaces internos y el logo los maneja la app.
+ * Fotos: solo si el usuario subió alguna; el valor es el nombre de una foto suya y se guarda su URL.
+ * Los enlaces internos los maneja la app.
  * La lista se genera a partir de los datos reales del proyecto (rutas tipo "slides.0.titulo").
  */
 
@@ -41,9 +42,17 @@ const MAXIMO: Record<string, number> = { historia: 600, 'servicios.texto': 220, 
 
 const generico = (ruta: string) => ruta.replace(/\.\d+\./, '.')
 
-/** Rutas editables presentes en los datos del proyecto, con su descripción. */
-export function camposEditables(datos: Datos): { ruta: string; descripcion: string }[] {
+// Campos de foto: el valor que da la IA es el nombre de una foto subida por el usuario.
+const FOTO = 'el nombre de una de las fotos subidas'
+export const esCampoFoto = (ruta: string) => /^(slides|servicios)\.\d+\.imagen$/.test(ruta) || ruta === 'historiaImagen' || ruta === 'logo'
+
+/** Rutas editables presentes en los datos del proyecto, con su descripción. Con `conFotos`, también las de fotos. */
+export function camposEditables(datos: Datos, conFotos = false): { ruta: string; descripcion: string }[] {
   const lista: { ruta: string; descripcion: string }[] = []
+  if (conFotos) {
+    lista.push({ ruta: 'logo', descripcion: `Logo del negocio en la barra (${FOTO}; solo si es un logo)` })
+    if ('historiaImagen' in datos) lista.push({ ruta: 'historiaImagen', descripcion: `Foto de la sección Nosotros (${FOTO})` })
+  }
   for (const [clave, valor] of Object.entries(datos)) {
     if (Array.isArray(valor)) {
       valor.forEach((item, i) => {
@@ -54,6 +63,9 @@ export function camposEditables(datos: Datos): { ruta: string; descripcion: stri
         if (NOMBRES[clave]) {
           const estado = (item as { oculto?: boolean }).oculto ? 'ahora oculto' : 'ahora visible'
           lista.push({ ruta: `${clave}.${i}.mostrar`, descripcion: `"si" para mostrar o "no" para ocultar ${NOMBRES[clave]} n.º ${i + 1} (${estado})` })
+        }
+        if (CON_FOTO.has(clave) && conFotos) {
+          lista.push({ ruta: `${clave}.${i}.imagen`, descripcion: `Foto de ${NOMBRES[clave]} n.º ${i + 1} (${FOTO})` })
         }
         if (CON_FOTO.has(clave)) {
           const estado = (item as { sinFoto?: boolean }).sinFoto ? 'ahora sin foto' : 'ahora con foto'
@@ -80,9 +92,9 @@ export function leer(datos: Datos, ruta: string): unknown {
  * Aplica los cambios propuestos por la IA sobre una copia de los datos.
  * Descarta rutas no permitidas y valores inválidos; devuelve qué se aplicó.
  */
-export function aplicarCambios(datos: Datos, cambios: { campo: unknown; valor: unknown }[]) {
+export function aplicarCambios(datos: Datos, cambios: { campo: unknown; valor: unknown }[], fotos: Record<string, string> = {}) {
   const copia = structuredClone(datos)
-  const permitidas = new Set(camposEditables(datos).map((c) => c.ruta))
+  const permitidas = new Set(camposEditables(datos, Object.keys(fotos).length > 0).map((c) => c.ruta))
   const aplicados: { campo: string; valor: string }[] = []
 
   for (const { campo, valor } of cambios) {
@@ -101,6 +113,22 @@ export function aplicarCambios(datos: Datos, cambios: { campo: unknown; valor: u
         item[tipo === 'mostrar' ? 'oculto' : 'sinFoto'] = !mostrar
       }
       aplicados.push({ campo, valor: mostrar ? 'si' : 'no' })
+      continue
+    }
+
+    // Fotos: solo se aceptan fotos subidas por el usuario a este proyecto; se guarda su URL y se muestra.
+    if (esCampoFoto(campo)) {
+      const url = fotos[valor.trim()]
+      if (!url) continue
+      if (campo === 'historiaImagen') { copia.historiaImagen = url; copia.historiaSinFoto = false }
+      else if (campo === 'logo') copia.logo = url
+      else {
+        const [lista, i] = campo.split('.')
+        const item = (copia[lista] as Record<string, unknown>[])[Number(i)]
+        item.imagen = url
+        item.sinFoto = false
+      }
+      aplicados.push({ campo, valor: valor.trim() })
       continue
     }
 

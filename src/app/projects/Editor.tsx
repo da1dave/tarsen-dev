@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { subirFoto, type Foto } from '../../lib/fotos'
 import { cargarMensajes, enviarMensaje, type MensajeChat, type Pregunta } from '../../lib/ia'
 import { guardarProyecto, leerProyecto, type Proyecto } from '../../lib/proyectos'
 import type { DatosPlantilla } from '../../templates/tipos'
@@ -8,6 +9,15 @@ import { PLANTILLAS } from '../../templates/registro'
 import FormularioIA from './FormularioIA'
 import { CampoDictado } from './dictado'
 import styles from './Editor.module.css'
+
+const FOTOS_POR_MENSAJE = 4
+const TEXTO_SOLO_FOTOS = 'Te comparto estas fotos para mi página.'
+
+const IconoClip = () => (
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="m21 11.5-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9" />
+  </svg>
+)
 
 /** Primeras preguntas, antes de que nuestra IA conozca el negocio. */
 const PRIMER_FORMULARIO: Pregunta[] = [
@@ -45,8 +55,14 @@ export default function Editor() {
   const [seleccion, setSeleccion] = useState<string | null>(null)
   const [formulario, setFormulario] = useState<Record<string, string>>({})
   const [aviso, setAviso] = useState('')
+  const [adjuntas, setAdjuntas] = useState<Foto[]>([])
+  const [subiendo, setSubiendo] = useState(0)
   const marco = useRef<HTMLIFrameElement>(null)
   const lista = useRef<HTMLDivElement>(null)
+  const selectorFotos = useRef<HTMLInputElement>(null)
+  // Proyecto más reciente, para lo que termina después de una espera (p. ej. subir una foto).
+  const actual = useRef(proyecto)
+  actual.current = proyecto
 
   useEffect(() => {
     leerProyecto(id)
@@ -72,7 +88,7 @@ export default function Editor() {
     const oir = (e: MessageEvent) => {
       if (e.origin !== window.location.origin || e.source !== marco.current?.contentWindow) return
       if (e.data?.tipo === 'tarsen:lista') enviarVista()
-      if (e.data?.tipo === 'tarsen:accion') accionar(e.data.accion, String(e.data.destino))
+      if (e.data?.tipo === 'tarsen:accion') accionar(e.data.accion, String(e.data.destino), e.data.archivo instanceof File ? e.data.archivo : undefined)
     }
     window.addEventListener('message', oir)
     return () => window.removeEventListener('message', oir)
@@ -96,17 +112,18 @@ export default function Editor() {
 
   // ---------- Edición detallada (sin IA) ----------
   const guardarDatos = async (nuevos: DatosPlantilla, mensaje: string) => {
-    if (!proyecto) return
-    setProyecto({ ...proyecto, datos: nuevos })
+    const p = actual.current
+    if (!p) return
+    setProyecto((x) => (x ? { ...x, datos: nuevos } : x))
     try {
-      await guardarProyecto(proyecto.id, { datos: nuevos })
+      await guardarProyecto(p.id, { datos: nuevos })
       setAviso(mensaje)
     } catch {
       setAviso('No se pudo guardar el cambio. Revisa tu conexión.')
     }
   }
 
-  function accionar(accion: string, destino: string) {
+  function accionar(accion: string, destino: string, archivo?: File) {
     if (!proyecto) return
     const d = proyecto.datos
     const partes = ed.separar(destino)
@@ -118,6 +135,11 @@ export default function Editor() {
     } else if (accion === 'duplicar' && partes) {
       if (!ed.puedeDuplicar(d, partes.lista)) { setAviso(`Llegaste al máximo de elementos de este tipo.`); return }
       guardarDatos(ed.duplicar(d, destino), `${nombre} duplicado.`)
+    } else if (accion === 'cambiarFoto' && archivo) {
+      setAviso('Subiendo foto…')
+      subirFoto(proyecto.id, archivo)
+        .then((f) => { const p = actual.current; if (p) guardarDatos(ed.ponerFoto(p.datos, destino, f.url), 'Foto cambiada.') })
+        .catch((err) => setAviso(err instanceof Error ? err.message : 'No pudimos subir la foto.'))
     } else if (accion === 'quitarFoto') {
       guardarDatos(ed.cambiarFoto(d, destino, false), `Foto quitada. Puedes recuperarla en "Ocultos".`)
     } else if (accion === 'borrar' && partes) {
@@ -135,24 +157,47 @@ export default function Editor() {
     setSeleccion(null)
   }
 
+  /** Sube las fotos elegidas para adjuntarlas al próximo mensaje. */
+  const agregarFotos = async (archivos: File[]) => {
+    if (!proyecto) return
+    const cupo = FOTOS_POR_MENSAJE - adjuntas.length
+    if (cupo <= 0) { setErrorChat(`Puedes adjuntar hasta ${FOTOS_POR_MENSAJE} fotos por mensaje.`); return }
+    setErrorChat(archivos.length > cupo ? `Solo se adjuntaron ${cupo} fotos (máximo ${FOTOS_POR_MENSAJE} por mensaje).` : '')
+    setModoChat(true)
+    for (const archivo of archivos.slice(0, cupo)) {
+      setSubiendo((n) => n + 1)
+      try {
+        const foto = await subirFoto(proyecto.id, archivo)
+        setAdjuntas((a) => [...a, foto])
+      } catch (err) {
+        setErrorChat(err instanceof Error ? err.message : 'No pudimos subir la foto.')
+      } finally {
+        setSubiendo((n) => n - 1)
+      }
+    }
+  }
+
   /** Envía un mensaje a nuestra IA. Con `editarDesde`, reemplaza ese mensaje y borra los siguientes. */
   const enviar = async (texto: string, editarDesde?: number) => {
-    const mensaje = texto.trim()
-    if (!proyecto || !mensaje || pensando) return
-    const antes = mensajes
-    const corte = editarDesde === undefined ? mensajes.length : mensajes.findIndex((m) => m.id === editarDesde)
+    const nuevo = editarDesde === undefined
+    // Las fotos adjuntas van con el mensaje nuevo; al editar, el mensaje conserva las suyas.
+    const corte = nuevo ? mensajes.length : mensajes.findIndex((m) => m.id === editarDesde)
     if (corte < 0) return
+    const fotos = nuevo ? adjuntas : mensajes[corte].fotos ?? []
+    const mensaje = texto.trim() || (fotos.length ? TEXTO_SOLO_FOTOS : '')
+    if (!proyecto || !mensaje || pensando || subiendo) return
+    const antes = mensajes
     const base = mensajes.slice(0, corte)
     setErrorChat('')
-    if (editarDesde === undefined) setBorrador('')
+    if (nuevo) { setBorrador(''); setAdjuntas([]) }
     setEditando(null)
-    setMensajes([...base, { id: `local-${Date.now()}`, rol: 'usuario', texto: mensaje }])
+    setMensajes([...base, { id: `local-${Date.now()}`, rol: 'usuario', texto: mensaje, fotos }])
     setPensando(true)
     try {
-      const r = await enviarMensaje(proyecto.id, mensaje, editarDesde)
+      const r = await enviarMensaje(proyecto.id, mensaje, editarDesde, nuevo ? fotos.map((f) => f.nombre) : undefined)
       setMensajes([
         ...base,
-        { id: r.ids?.usuario ?? `local-${Date.now()}`, rol: 'usuario', texto: mensaje },
+        { id: r.ids?.usuario ?? `local-${Date.now()}`, rol: 'usuario', texto: mensaje, fotos },
         { id: r.ids?.asistente ?? `ia-${Date.now()}`, rol: 'asistente', texto: r.respuesta, cambios: r.cambios, formulario: r.formulario },
       ])
       setAnteriores((n) => Math.min(n, corte))
@@ -161,8 +206,9 @@ export default function Editor() {
     } catch (err) {
       setErrorChat(err instanceof Error ? err.message : 'Nuestra IA no pudo responder.')
       setMensajes(antes)
-      if (editarDesde === undefined) {
-        setBorrador(mensaje)
+      if (nuevo) {
+        setBorrador(texto.trim())
+        setAdjuntas(fotos)
         setModoChat(true) // el texto vuelve al campo del chat para reintentar
       } else {
         setEditando(editarDesde)
@@ -193,7 +239,7 @@ export default function Editor() {
   // El formulario vigente es el de la última respuesta de la IA (o el inicial si aún no hay conversación).
   const ultimo = mensajes[mensajes.length - 1]
   const preguntas = mensajes.length === 0 ? PRIMER_FORMULARIO : ultimo?.rol === 'asistente' ? ultimo.formulario ?? null : null
-  const conOpciones = !!preguntas?.length && !modoChat
+  const conOpciones = !!preguntas?.length && !modoChat && !adjuntas.length && !subiendo
   const sinMensajes = proyecto.mensajes_usados >= 40
   const ultimoUsuario = [...mensajes].reverse().find((m) => m.rol === 'usuario')
   const vista = `/vista/proyecto/${proyecto.id}`
@@ -257,7 +303,7 @@ export default function Editor() {
               ) : (
                 <>
                   <h2>Edición detallada</h2>
-                  <p>Pasa el mouse sobre cualquier elemento de tu página y usa sus botones para <b>editar</b>, <b>duplicar</b>, <b>quitar la foto</b> o <b>borrar</b>. Los cambios se guardan solos.</p>
+                  <p>Pasa el mouse sobre cualquier elemento de tu página y usa sus botones para <b>editar</b>, <b>duplicar</b>, <b>cambiar o quitar la foto</b> o <b>borrar</b>. Los cambios se guardan solos.</p>
                   <h3>Ocultos</h3>
                   {ed.ocultos(proyecto.datos).length ? (
                     <ul className={styles.ocultos}>
@@ -320,7 +366,14 @@ export default function Editor() {
                       <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M4 17.25V20h2.75L17.81 8.94l-2.75-2.75L4 17.25Zm15.71-9.04a1 1 0 0 0 0-1.42l-2.5-2.5a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 2-1.66Z" /></svg>
                     </button>
                   )}
-                  <div className={styles.burbujaYo}>{m.texto}</div>
+                  <div className={styles.burbujaYo}>
+                    {!!m.fotos?.length && (
+                      <div className={styles.fotosMensaje}>
+                        {m.fotos.map((f) => <img key={f.nombre} src={f.url} alt="Foto adjunta" loading="lazy" />)}
+                      </div>
+                    )}
+                    {m.fotos?.length && m.texto === TEXTO_SOLO_FOTOS ? null : m.texto}
+                  </div>
                 </div>
               )
             ) : (
@@ -344,10 +397,19 @@ export default function Editor() {
             {pensando && <div className={`${styles.burbujaIA} ${styles.escribiendo}`} aria-label="Tarsen está escribiendo"><i /><i /><i /></div>}
           </div>
           {errorChat && <p className={styles.errorChat} role="alert">{errorChat}</p>}
+          <input
+            ref={selectorFotos}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={(e) => { const archivos = [...(e.target.files ?? [])]; e.target.value = ''; agregarFotos(archivos) }}
+          />
           {conOpciones ? (
             <div className={styles.pista}>
               <span>Elige una opción arriba</span>
               <button type="button" onClick={() => setModoChat(true)} disabled={pensando}>o escribe un mensaje</button>
+              <button type="button" onClick={() => selectorFotos.current?.click()} disabled={pensando || sinMensajes}>o adjunta fotos</button>
             </div>
           ) : (
             <form className={styles.entrada} onSubmit={(e) => { e.preventDefault(); enviar(borrador) }}>
@@ -356,7 +418,28 @@ export default function Editor() {
                   ← Volver a las opciones
                 </button>
               )}
+              {(adjuntas.length > 0 || subiendo > 0) && (
+                <div className={styles.adjuntas}>
+                  {adjuntas.map((f) => (
+                    <div key={f.nombre} className={styles.miniatura}>
+                      <img src={f.url} alt="Foto para adjuntar" />
+                      <button type="button" onClick={() => setAdjuntas((a) => a.filter((x) => x !== f))} aria-label="Quitar foto" title="Quitar foto" disabled={pensando}>✕</button>
+                    </div>
+                  ))}
+                  {subiendo > 0 && <div className={`${styles.miniatura} ${styles.cargandoFoto}`} role="status">Subiendo…</div>}
+                </div>
+              )}
               <div className={styles.fila}>
+                <button
+                  type="button"
+                  className={styles.adjuntar}
+                  onClick={() => selectorFotos.current?.click()}
+                  disabled={pensando || sinMensajes || adjuntas.length + subiendo >= FOTOS_POR_MENSAJE}
+                  aria-label="Adjuntar fotos"
+                  title="Adjuntar fotos"
+                >
+                  <IconoClip />
+                </button>
                 <CampoDictado
                   valor={borrador}
                   cambiar={setBorrador}
@@ -366,7 +449,7 @@ export default function Editor() {
                   disabled={pensando}
                   autoFocus={modoChat}
                 />
-                <button type="submit" disabled={pensando || !borrador.trim()}>Enviar</button>
+                <button type="submit" disabled={pensando || subiendo > 0 || (!borrador.trim() && !adjuntas.length)}>Enviar</button>
               </div>
             </form>
           )}

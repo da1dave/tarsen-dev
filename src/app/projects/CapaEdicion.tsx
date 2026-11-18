@@ -4,10 +4,11 @@ import styles from './CapaEdicion.module.css'
 /*
  * Capa de la edición detallada, dentro de la vista previa (iframe).
  * Al pasar el mouse sobre un elemento con data-editable lo resalta y muestra una barra con
- * Editar / Duplicar / Quitar foto / Borrar. Las acciones se envían al editor (postMessage),
+ * Editar / Duplicar / Cambiar foto / Quitar foto / Borrar.
+ * "Cambiar foto" abre el selector de archivos aquí mismo (dentro del iframe) y envía el archivo al editor. Las acciones se envían al editor (postMessage),
  * que es quien cambia y guarda los datos. Mientras está activa, los enlaces de la página no navegan.
  */
-export type Accion = 'editar' | 'duplicar' | 'quitarFoto' | 'borrar'
+export type Accion = 'editar' | 'duplicar' | 'cambiarFoto' | 'quitarFoto' | 'borrar'
 
 interface Objetivo { destino: string; rect: DOMRect; conFoto: boolean }
 
@@ -15,10 +16,12 @@ const buscar = (el: EventTarget | null) => (el instanceof Element ? el.closest<H
 // ¿Tiene recuadro de foto? (imagen o etiqueta de foto vacía)
 const tieneFoto = (el: HTMLElement) => !!el.querySelector('img, [role="img"]') || el.dataset.editable === 'historiaFoto'
 
-export default function CapaEdicion({ alAccion }: { alAccion: (accion: Accion, destino: string) => void }) {
+export default function CapaEdicion({ alAccion }: { alAccion: (accion: Accion, destino: string, archivo?: File) => void }) {
   const [objetivo, setObjetivo] = useState<Objetivo | null>(null)
   const actual = useRef<HTMLElement | null>(null)
   const barra = useRef<HTMLDivElement>(null)
+  const selector = useRef<HTMLInputElement>(null)
+  const destinoFoto = useRef('')
 
   useEffect(() => {
     const medir = () => {
@@ -50,7 +53,23 @@ export default function CapaEdicion({ alAccion }: { alAccion: (accion: Accion, d
     }
   }, [])
 
-  if (!objetivo) return <div className={styles.aviso}>Edición detallada: pasa el mouse sobre un elemento</div>
+  // El selector de archivos queda montado siempre: el elemento resaltado puede cambiar mientras está abierto.
+  const entradaFoto = (
+    <input
+      ref={selector}
+      type="file"
+      accept="image/*"
+      hidden
+      onChange={(e) => {
+        const archivo = e.target.files?.[0]
+        e.target.value = ''
+        if (archivo && destinoFoto.current) alAccion('cambiarFoto', destinoFoto.current, archivo)
+      }}
+    />
+  )
+  const elegirFoto = (destino: string) => { destinoFoto.current = destino; selector.current?.click() }
+
+  if (!objetivo) return <>{entradaFoto}<div className={styles.aviso}>Edición detallada: pasa el mouse sobre un elemento</div></>
   const { rect, destino, conFoto } = objetivo
   const soloFoto = destino === 'historiaFoto'
   // La barra va arriba a la derecha del elemento, sin salirse de la pantalla.
@@ -59,10 +78,12 @@ export default function CapaEdicion({ alAccion }: { alAccion: (accion: Accion, d
 
   return (
     <>
+      {entradaFoto}
       <div className={styles.marco} style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }} />
       <div ref={barra} className={styles.barra} style={{ top, right }}>
         {!soloFoto && <button type="button" onClick={() => alAccion('editar', destino)}>✎ Editar</button>}
         {!soloFoto && <button type="button" onClick={() => alAccion('duplicar', destino)}>⧉ Duplicar</button>}
+        {conFoto && <button type="button" onClick={() => elegirFoto(destino)}>🖼 Cambiar foto</button>}
         {conFoto && <button type="button" onClick={() => alAccion('quitarFoto', destino)}>◫ Quitar foto</button>}
         {!soloFoto && <button type="button" className={styles.peligro} onClick={() => alAccion('borrar', destino)}>✕ Borrar</button>}
       </div>
