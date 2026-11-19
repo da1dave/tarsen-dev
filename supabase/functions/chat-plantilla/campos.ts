@@ -54,7 +54,7 @@ const LIMITES: Record<string, number> = {
 }
 // Plantillas donde un texto se muestra enorme y necesita ser más corto.
 const LIMITES_PLANTILLA: Record<string, Record<string, number>> = {
-  aurea: { 'slides.0.titulo': 26, nombre: 22 }, // portada en mayúsculas gigantes; nombre espaciado en la barra
+  aurea: { 'slides.0.titulo': 22, nombre: 22 }, // portada en mayúsculas gigantes; nombre espaciado en la barra
   marea: { 'slides.titulo': 30 }, // títulos de 76 px dentro del panel de cristal
 }
 export function limiteTexto(campo: string, plantilla = ''): number {
