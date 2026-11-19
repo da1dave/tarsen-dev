@@ -15,6 +15,7 @@
  */
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { aplicarCambios, camposEditables } from './campos.ts'
+import { ESPACIOS, describir, infoFoto, motivoRechazo, type InfoFoto } from './fotos.ts'
 import { ErrorProveedor, PROVEEDOR, responder, separarFormularioEscrito, type MensajeHistorial, type Pregunta } from './proveedor.ts'
 
 const LIMITE_POR_PROYECTO = 40
@@ -34,10 +35,22 @@ const error = (mensaje: string, estado: number) => responderJson({ error: mensaj
 
 interface FotoMensaje { nombre: string; url: string }
 
-function instrucciones(datos: Record<string, unknown>, campos: { ruta: string; descripcion: string }[], fotos: string[]) {
+function instrucciones(
+  datos: Record<string, unknown>,
+  campos: { ruta: string; descripcion: string }[],
+  fotos: { nombre: string; info: InfoFoto | null }[],
+  plantilla: string,
+) {
   const seccionFotos = fotos.length
-    ? `Fotos que subió el usuario (para ponerlas usa su nombre como valor del campo de foto): ${fotos.join(', ')}.
-Las fotos adjuntas al último mensaje van incluidas para que las veas: ponlas donde mejor encajen según lo que muestran (o donde pida el usuario) y cuéntale en tu mensaje dónde quedó cada una.`
+    ? `Fotos que subió el usuario (para ponerlas usa su nombre como valor del campo de foto):
+${fotos.map((f) => `- ${f.nombre}: ${describir(f.info)}`).join('\n')}
+Las fotos adjuntas al último mensaje van incluidas para que las veas.
+Cómo elegir dónde va cada foto (según su tamaño, forma y lo que muestra; o donde pida el usuario):
+- ${ESPACIOS[plantilla]?.nota ?? 'Las fotos van en recuadros medianos.'}
+- Un logo (con transparencia, o que se vea como logo aunque no la tenga) va en el campo "logo" (la barra de arriba, en pequeño). Nunca lo pongas de fondo.
+- Las fotos pequeñas (menos de 800 px) van en servicios o en espacios chicos, nunca en un espacio a pantalla completa: se verían pixeladas.
+- Para mover una foto, ponla en su nuevo campo y quita la del lugar anterior con el valor "ninguna".
+- Cuéntale en tu mensaje dónde quedó cada foto. Si una foto no sirve para lo que pide (por ejemplo, es muy pequeña para la portada), explícaselo y propón dónde se vería bien.`
     : 'El usuario aún no ha subido fotos.'
   return `Eres Tarsen, el asistente de Tarsen Dev. Ayudas a dueños de negocios a llenar su landing page.
 
@@ -48,7 +61,7 @@ Tu única tarea es construir y ajustar la página del usuario:
 - Si pide quitar algo, ocúltalo con los campos "mostrar" / "mostrarFoto" (valor "no"); si pide recuperarlo, usa "si". Nada se borra.
 
 Lo que puedes hacer: cambiar los textos de la página, el color principal, poner en la página las fotos que el usuario sube con el botón de adjuntar fotos del chat, y mostrar u ocultar destacados, servicios, cifras, redes y fotos.
-Lo que NO puedes hacer (dilo con claridad si te lo piden, sin inventar alternativas): buscar, crear ni editar fotos, agregar secciones nuevas, cambiar de plantilla o el diseño, ni publicar la página (eso lo hace el usuario con el botón "Publicar" de arriba del editor). Para cambios a mano, el usuario puede usar el botón "Edición detallada" del editor.
+Lo que NO puedes hacer (dilo con claridad si te lo piden, sin inventar alternativas): buscar, crear ni editar fotos (sí puedes moverlas de lugar o quitarlas), agregar secciones nuevas, cambiar de plantilla o el diseño, ni publicar la página (eso lo hace el usuario con el botón "Publicar" de arriba del editor). Para cambios a mano, el usuario puede usar el botón "Edición detallada" del editor.
 Nunca describas botones, menús ni funciones de la plataforma que no estén en esta lista.
 - Nunca inventes datos de contacto, direcciones, horarios, precios ni cifras: si no los tienes, deja el campo como está y pregúntalos.
 - Los campos que empiezan con "→ acá va" aún no tienen contenido.
@@ -89,7 +102,7 @@ Deno.serve(async (req) => {
   // La service role salta RLS: por eso todo se filtra por usuario_id a mano.
   const admin = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
   const { data: proyecto } = await admin
-    .from('proyectos').select('id, datos, mensajes_usados')
+    .from('proyectos').select('id, plantilla, datos, mensajes_usados')
     .eq('id', cuerpo.proyectoId).eq('usuario_id', user.id).maybeSingle()
   if (!proyecto) return error('No encontramos ese proyecto.', 404)
 
@@ -161,11 +174,15 @@ Deno.serve(async (req) => {
     imagenes: adjuntas.map((f) => f.url),
   })
 
+  // Tamaño y transparencia de cada foto (del nombre o de la cabecera del archivo).
   const nombresFotos = Object.keys(fotosProyecto)
+  const infos: Record<string, InfoFoto | null> = Object.fromEntries(
+    await Promise.all(nombresFotos.map(async (n) => [n, await infoFoto(n, fotosProyecto[n])] as const)),
+  )
   const campos = camposEditables(datosBase, nombresFotos.length > 0)
   let respuesta
   try {
-    respuesta = await responder({ sistema: instrucciones(datosBase, campos, nombresFotos), historial, campos: campos.map((c) => c.ruta) })
+    respuesta = await responder({ sistema: instrucciones(datosBase, campos, nombresFotos.map((n) => ({ nombre: n, info: infos[n] })), proyecto.plantilla), historial, campos: campos.map((c) => c.ruta) })
   } catch (e) {
     console.error(e)
     if (e instanceof ErrorProveedor && e.tipo === 'cuota') return error('Nuestra IA está atendiendo a muchas personas. Intenta en un momento.', 503)
@@ -174,8 +191,12 @@ Deno.serve(async (req) => {
   }
 
   // 4. Aplicar cambios y guardar
-  const { datos, aplicados } = aplicarCambios(datosBase, respuesta.cambios, fotosProyecto)
-  const texto = respuesta.texto || (aplicados.length ? '¡Listo! Mira cómo va quedando tu página.' : 'Cuéntame un poco más de tu negocio.')
+  const { datos, aplicados, rechazos } = aplicarCambios(
+    datosBase, respuesta.cambios, fotosProyecto, (campo, nombre) => motivoRechazo(campo, infos[nombre] ?? null, proyecto.plantilla),
+  )
+  // Si alguna foto no se puso porque se vería mal, se avisa (la IA no lo sabe al escribir su mensaje).
+  const avisos = rechazos.map((r) => `No puse una de tus fotos en ${r.campo.startsWith('slides.0') ? 'la portada' : 'ese lugar'} porque ${r.motivo}. Prueba con una foto más grande o pídeme ponerla en otro lugar.`)
+  const texto = [respuesta.texto || (aplicados.length ? '¡Listo! Mira cómo va quedando tu página.' : 'Cuéntame un poco más de tu negocio.'), ...new Set(avisos)].join('\n\n')
   const usados = proyecto.mensajes_usados + 1
 
   const { error: errGuardar } = await admin.from('proyectos').update({ datos, mensajes_usados: usados }).eq('id', proyecto.id)

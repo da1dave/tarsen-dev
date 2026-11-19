@@ -43,7 +43,7 @@ const MAXIMO: Record<string, number> = { historia: 600, 'servicios.texto': 220, 
 const generico = (ruta: string) => ruta.replace(/\.\d+\./, '.')
 
 // Campos de foto: el valor que da la IA es el nombre de una foto subida por el usuario.
-const FOTO = 'el nombre de una de las fotos subidas'
+const FOTO = 'el nombre de una de las fotos subidas, o "ninguna" para quitar la foto de ahí'
 export const esCampoFoto = (ruta: string) => /^(slides|servicios)\.\d+\.imagen$/.test(ruta) || ruta === 'historiaImagen' || ruta === 'logo'
 
 /** Rutas editables presentes en los datos del proyecto, con su descripción. Con `conFotos`, también las de fotos. */
@@ -92,10 +92,20 @@ export function leer(datos: Datos, ruta: string): unknown {
  * Aplica los cambios propuestos por la IA sobre una copia de los datos.
  * Descarta rutas no permitidas y valores inválidos; devuelve qué se aplicó.
  */
-export function aplicarCambios(datos: Datos, cambios: { campo: unknown; valor: unknown }[], fotos: Record<string, string> = {}) {
+/**
+ * `fotos`: nombre → URL de las fotos del proyecto.
+ * `revisarFoto`: devuelve el motivo si esa foto se vería mal en ese campo (p. ej. muy pequeña para un fondo).
+ */
+export function aplicarCambios(
+  datos: Datos,
+  cambios: { campo: unknown; valor: unknown }[],
+  fotos: Record<string, string> = {},
+  revisarFoto: (campo: string, nombre: string) => string | null = () => null,
+) {
   const copia = structuredClone(datos)
   const permitidas = new Set(camposEditables(datos, Object.keys(fotos).length > 0).map((c) => c.ruta))
   const aplicados: { campo: string; valor: string }[] = []
+  const rechazos: { campo: string; foto: string; motivo: string }[] = []
 
   for (const { campo, valor } of cambios) {
     if (typeof campo !== 'string' || typeof valor !== 'string' || !permitidas.has(campo)) continue
@@ -117,18 +127,25 @@ export function aplicarCambios(datos: Datos, cambios: { campo: unknown; valor: u
     }
 
     // Fotos: solo se aceptan fotos subidas por el usuario a este proyecto; se guarda su URL y se muestra.
+    // "ninguna" quita la foto de ese lugar (así se puede mover una foto a otro campo).
     if (esCampoFoto(campo)) {
-      const url = fotos[valor.trim()]
-      if (!url) continue
-      if (campo === 'historiaImagen') { copia.historiaImagen = url; copia.historiaSinFoto = false }
+      const nombre = valor.trim()
+      const quitar = /^(ninguna|ninguno|quitar|vac[ií]o)$/i.test(nombre)
+      const url = quitar ? '' : fotos[nombre]
+      if (url === undefined) continue
+      if (!quitar) {
+        const motivo = revisarFoto(campo, nombre)
+        if (motivo) { rechazos.push({ campo, foto: nombre, motivo }); continue }
+      }
+      if (campo === 'historiaImagen') { copia.historiaImagen = url; if (url) copia.historiaSinFoto = false }
       else if (campo === 'logo') copia.logo = url
       else {
         const [lista, i] = campo.split('.')
         const item = (copia[lista] as Record<string, unknown>[])[Number(i)]
         item.imagen = url
-        item.sinFoto = false
+        if (url) item.sinFoto = false
       }
-      aplicados.push({ campo, valor: valor.trim() })
+      aplicados.push({ campo, valor: quitar ? 'ninguna' : nombre })
       continue
     }
 
@@ -149,5 +166,5 @@ export function aplicarCambios(datos: Datos, cambios: { campo: unknown; valor: u
       if (digitos.length >= 10) copia.waHref = `https://wa.me/${digitos}`
     }
   }
-  return { datos: copia, aplicados }
+  return { datos: copia, aplicados, rechazos }
 }
