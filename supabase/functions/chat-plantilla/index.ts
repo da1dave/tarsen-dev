@@ -14,7 +14,7 @@
  * Las claves (GEMINI_API_KEY, service role) solo existen aquí, nunca en el navegador.
  */
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { aplicarCambios, camposEditables } from './campos.ts'
+import { aplicarCambios, camposEditables, esCampoFoto, revisarTexto } from './campos.ts'
 import { ESPACIOS, describir, infoFoto, motivoRechazo, type InfoFoto } from './fotos.ts'
 import { ErrorProveedor, PROVEEDOR, responder, separarFormularioEscrito, type MensajeHistorial, type Pregunta } from './proveedor.ts'
 
@@ -57,6 +57,7 @@ Cómo elegir dónde va cada foto (según su tamaño, forma y lo que muestra; o d
 Tu única tarea es construir y ajustar la página del usuario:
 - Pregunta por su negocio: qué hace, para quién, qué lo hace diferente, el tono que quiere, y sus datos de contacto (dirección, horario, teléfono, WhatsApp, correo, redes).
 - Cada vez que tengas información nueva, usa la herramienta "actualizar_plantilla" para llenar todos los campos que puedas de una vez, con textos persuasivos, claros y cortos, en español.
+- Respeta el máximo de caracteres de cada campo (va en la lista de campos): es el espacio real que tiene en el diseño. Un título es corto y con gancho; no metas el nombre del negocio y el eslogan en el mismo título.
 - Si el usuario pide un ajuste ("más formal", "cambia el eslogan"), aplícalo con la herramienta.
 - Si pide quitar algo, ocúltalo con los campos "mostrar" / "mostrarFoto" (valor "no"); si pide recuperarlo, usa "si". Nada se borra.
 
@@ -179,10 +180,24 @@ Deno.serve(async (req) => {
   const infos: Record<string, InfoFoto | null> = Object.fromEntries(
     await Promise.all(nombresFotos.map(async (n) => [n, await infoFoto(n, fotosProyecto[n])] as const)),
   )
-  const campos = camposEditables(datosBase, nombresFotos.length > 0)
+  const campos = camposEditables(datosBase, nombresFotos.length > 0, proyecto.plantilla)
+  // Problemas de los cambios que propone la IA: se le devuelven en el mismo turno para que los corrija.
+  const revisar = (cambios: { campo: string; valor: string }[]) => cambios.flatMap(({ campo, valor }) => {
+    if (typeof campo !== 'string' || typeof valor !== 'string') return []
+    if (esCampoFoto(campo)) {
+      const nombre = valor.trim()
+      if (/^(ninguna|ninguno|quitar|vac[ií]o)$/i.test(nombre)) return []
+      if (!(nombre in fotosProyecto)) return [`${campo}: no existe una foto llamada "${nombre}"`]
+      const motivo = motivoRechazo(campo, infos[nombre] ?? null, proyecto.plantilla)
+      return motivo ? [`${campo} = ${nombre}: esa foto ${motivo}`] : []
+    }
+    if (campo === 'acento' || /\.(mostrar|mostrarFoto)$|MostrarFoto$/.test(campo)) return []
+    const motivo = revisarTexto(campo, valor, proyecto.plantilla)
+    return motivo ? [`${campo} = "${valor.trim()}": ${motivo}`] : []
+  })
   let respuesta
   try {
-    respuesta = await responder({ sistema: instrucciones(datosBase, campos, nombresFotos.map((n) => ({ nombre: n, info: infos[n] })), proyecto.plantilla), historial, campos: campos.map((c) => c.ruta) })
+    respuesta = await responder({ sistema: instrucciones(datosBase, campos, nombresFotos.map((n) => ({ nombre: n, info: infos[n] })), proyecto.plantilla), historial, campos: campos.map((c) => c.ruta), revisar })
   } catch (e) {
     console.error(e)
     if (e instanceof ErrorProveedor && e.tipo === 'cuota') return error('Nuestra IA está atendiendo a muchas personas. Intenta en un momento.', 503)
@@ -193,9 +208,11 @@ Deno.serve(async (req) => {
   // 4. Aplicar cambios y guardar
   const { datos, aplicados, rechazos } = aplicarCambios(
     datosBase, respuesta.cambios, fotosProyecto, (campo, nombre) => motivoRechazo(campo, infos[nombre] ?? null, proyecto.plantilla),
+    proyecto.plantilla,
   )
   // Si alguna foto no se puso porque se vería mal, se avisa (la IA no lo sabe al escribir su mensaje).
-  const avisos = rechazos.map((r) => `No puse una de tus fotos en ${r.campo.startsWith('slides.0') ? 'la portada' : 'ese lugar'} porque ${r.motivo}. Prueba con una foto más grande o pídeme ponerla en otro lugar.`)
+  const puestos = new Set(aplicados.map((a) => a.campo))
+  const avisos = rechazos.filter((r) => !puestos.has(r.campo)).map((r) => `No puse una de tus fotos en ${r.campo.startsWith('slides.0') ? 'la portada' : 'ese lugar'} porque ${r.motivo}. Prueba con una foto más grande o pídeme ponerla en otro lugar.`)
   const texto = [respuesta.texto || (aplicados.length ? '¡Listo! Mira cómo va quedando tu página.' : 'Cuéntame un poco más de tu negocio.'), ...new Set(avisos)].join('\n\n')
   const usados = proyecto.mensajes_usados + 1
 

@@ -13,7 +13,8 @@ export interface MensajeHistorial { rol: 'usuario' | 'asistente'; texto: string;
 export interface Cambio { campo: string; valor: string }
 export interface Pregunta { pregunta: string; tipo: 'opciones' | 'varias' | 'texto'; opciones: string[] }
 export interface Respuesta { texto: string; cambios: Cambio[]; formulario?: Pregunta[]; tokensEntrada: number; tokensSalida: number }
-export interface Peticion { sistema: string; historial: MensajeHistorial[]; campos: string[] }
+/** `revisar`: problemas de unos cambios (texto que no cabe, foto que se vería mal); se le devuelven a la IA para que corrija. */
+export interface Peticion { sistema: string; historial: MensajeHistorial[]; campos: string[]; revisar?: (cambios: Cambio[]) => string[] }
 
 export class ErrorProveedor extends Error {
   constructor(public tipo: 'cuota' | 'bloqueo' | 'otro', mensaje: string) { super(mensaje) }
@@ -184,7 +185,7 @@ function claude() {
   return clienteClaude
 }
 
-async function responderClaude({ sistema, historial, campos }: Peticion): Promise<Respuesta> {
+async function responderClaude({ sistema, historial, campos, revisar }: Peticion): Promise<Respuesta> {
   const herramientas: Anthropic.Tool[] = [
     {
       name: NOMBRE_HERRAMIENTA,
@@ -303,17 +304,23 @@ async function responderClaude({ sistema, historial, campos }: Peticion): Promis
 
     for (const b of respuesta.content) if (b.type === 'text') texto += (texto && b.text ? '\n' : '') + b.text
     const usos = respuesta.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
+    const problemas = new Map<string, string[]>() // id del uso → problemas de sus cambios
     for (const uso of usos) {
       if (uso.name === NOMBRE_HERRAMIENTA) {
         const lista = (uso.input as { cambios?: unknown })?.cambios
-        if (Array.isArray(lista)) cambios.push(...(lista as Cambio[]))
+        if (Array.isArray(lista)) {
+          cambios.push(...(lista as Cambio[]))
+          const p = revisar?.(lista as Cambio[]) ?? []
+          if (p.length) problemas.set(uso.id, p)
+        }
       } else if (uso.name === NOMBRE_FORMULARIO) {
         formulario = limpiarFormulario(uso.input) ?? formulario
       }
     }
     if (respuesta.stop_reason !== 'tool_use' || !usos.length) break
-    // Ya hay mensaje y formulario: no hace falta otra vuelta.
-    if (texto.trim() && formulario) break
+    // Ya hay mensaje y formulario, y todo se pudo aplicar: no hace falta otra vuelta.
+    if (texto.trim() && formulario && !problemas.size) break
+    if (problemas.size && vuelta === 2) break
 
     // Se devuelve el contenido completo (incluye los bloques de razonamiento) y el resultado de cada herramienta.
     mensajes.push({ role: 'assistant', content: respuesta.content })
@@ -322,7 +329,14 @@ async function responderClaude({ sistema, historial, campos }: Peticion): Promis
       content: usos.map((uso) => ({
         type: 'tool_result' as const,
         tool_use_id: uso.id,
-        content: uso.name === NOMBRE_FORMULARIO ? 'Formulario listo para mostrarse.' : 'Cambios aplicados en la página.',
+        ...(problemas.has(uso.id)
+          ? {
+            is_error: true,
+            content: `Estos cambios NO se aplicaron porque no caben o se verían mal en la plantilla:\n${problemas.get(uso.id)!.map((p) => `- ${p}`).join('\n')}\n`
+              + 'Los demás sí se aplicaron. Vuelve a usar la herramienta con versiones corregidas (textos más cortos que conserven la idea, u otra ubicación para la foto). '
+              + 'Si no hay una alternativa, explícaselo al usuario en tu mensaje.',
+          }
+          : { content: uso.name === NOMBRE_FORMULARIO ? 'Formulario listo para mostrarse.' : 'Cambios aplicados en la página.' }),
       })),
     })
   }

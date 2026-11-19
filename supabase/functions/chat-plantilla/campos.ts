@@ -38,7 +38,35 @@ const NOMBRES: Record<string, string> = { slides: 'el destacado', servicios: 'el
 const CON_FOTO = new Set(['slides', 'servicios'])
 
 // Límite de caracteres por campo (los textos largos se recortan).
-const MAXIMO: Record<string, number> = { historia: 600, 'servicios.texto': 220, serviciosIntro: 220, 'slides.texto': 180 }
+/*
+ * Máximo de caracteres de cada texto, según el espacio que tiene en las plantillas.
+ * Un texto más largo no se aplica: se le devuelve a la IA para que lo acorte (ver revisarTexto).
+ */
+const LIMITES: Record<string, number> = {
+  nombre: 28,
+  'slides.titulo': 38, 'slides.texto': 140, 'slides.boton': 20,
+  serviciosIntro: 200, 'servicios.titulo': 40, 'servicios.texto': 200,
+  frase: 70, historiaTitulo: 45, historia: 600,
+  'datos.valor': 8, 'datos.etiqueta': 50,
+  direccion: 120, horario: 100, telefono: 30, whatsapp: 30, correo: 60,
+  'redes.red': 20, 'redes.usuario': 40,
+  cta: 70, ctaBoton: 26,
+}
+// Plantillas donde un texto se muestra enorme y necesita ser más corto.
+const LIMITES_PLANTILLA: Record<string, Record<string, number>> = {
+  aurea: { 'slides.0.titulo': 26, nombre: 22 }, // portada en mayúsculas gigantes; nombre espaciado en la barra
+  marea: { 'slides.titulo': 30 }, // títulos de 76 px dentro del panel de cristal
+}
+export function limiteTexto(campo: string, plantilla = ''): number {
+  const propios = LIMITES_PLANTILLA[plantilla] ?? {}
+  return propios[campo] ?? propios[generico(campo)] ?? LIMITES[generico(campo)] ?? 120
+}
+/** Motivo por el que un texto no cabe en su espacio, o null. */
+export function revisarTexto(campo: string, valor: string, plantilla = ''): string | null {
+  const max = limiteTexto(campo, plantilla)
+  const largo = valor.trim().length
+  return largo > max ? `tiene ${largo} caracteres y en esta plantilla caben máximo ${max}` : null
+}
 
 const generico = (ruta: string) => ruta.replace(/\.\d+\./, '.')
 
@@ -47,7 +75,9 @@ const FOTO = 'el nombre de una de las fotos subidas, o "ninguna" para quitar la 
 export const esCampoFoto = (ruta: string) => /^(slides|servicios)\.\d+\.imagen$/.test(ruta) || ruta === 'historiaImagen' || ruta === 'logo'
 
 /** Rutas editables presentes en los datos del proyecto, con su descripción. Con `conFotos`, también las de fotos. */
-export function camposEditables(datos: Datos, conFotos = false): { ruta: string; descripcion: string }[] {
+export function camposEditables(datos: Datos, conFotos = false, plantilla = ''): { ruta: string; descripcion: string }[] {
+  const conLimite = (ruta: string, descripcion: string) =>
+    ruta === 'acento' ? descripcion : `${descripcion} — máx. ${limiteTexto(ruta, plantilla)} caracteres`
   const lista: { ruta: string; descripcion: string }[] = []
   if (conFotos) {
     lista.push({ ruta: 'logo', descripcion: `Logo del negocio en la barra (${FOTO}; solo si es un logo)` })
@@ -58,7 +88,7 @@ export function camposEditables(datos: Datos, conFotos = false): { ruta: string;
       valor.forEach((item, i) => {
         for (const sub of Object.keys(item as object)) {
           const descripcion = DESCRIPCIONES[`${clave}.${sub}`]
-          if (descripcion) lista.push({ ruta: `${clave}.${i}.${sub}`, descripcion: `${descripcion} (n.º ${i + 1})` })
+          if (descripcion) lista.push({ ruta: `${clave}.${i}.${sub}`, descripcion: conLimite(`${clave}.${i}.${sub}`, `${descripcion} (n.º ${i + 1})`) })
         }
         if (NOMBRES[clave]) {
           const estado = (item as { oculto?: boolean }).oculto ? 'ahora oculto' : 'ahora visible'
@@ -73,7 +103,7 @@ export function camposEditables(datos: Datos, conFotos = false): { ruta: string;
         }
       })
     } else if (DESCRIPCIONES[clave]) {
-      lista.push({ ruta: clave, descripcion: DESCRIPCIONES[clave] })
+      lista.push({ ruta: clave, descripcion: conLimite(clave, DESCRIPCIONES[clave]) })
     }
   }
   if ('historiaImagen' in datos) {
@@ -101,9 +131,10 @@ export function aplicarCambios(
   cambios: { campo: unknown; valor: unknown }[],
   fotos: Record<string, string> = {},
   revisarFoto: (campo: string, nombre: string) => string | null = () => null,
+  plantilla = '',
 ) {
   const copia = structuredClone(datos)
-  const permitidas = new Set(camposEditables(datos, Object.keys(fotos).length > 0).map((c) => c.ruta))
+  const permitidas = new Set(camposEditables(datos, Object.keys(fotos).length > 0, plantilla).map((c) => c.ruta))
   const aplicados: { campo: string; valor: string }[] = []
   const rechazos: { campo: string; foto: string; motivo: string }[] = []
 
@@ -149,8 +180,10 @@ export function aplicarCambios(
       continue
     }
 
-    let v = valor.trim().slice(0, MAXIMO[generico(campo)] ?? 120)
+    let v = valor.trim()
     if (!v) continue
+    // Un texto que no cabe en su espacio no se aplica (rompería el diseño); la IA ya fue avisada para acortarlo.
+    if (campo !== 'acento' && revisarTexto(campo, v, plantilla)) { console.warn('Texto muy largo, no se aplicó', campo, v.length); continue }
     if (campo === 'acento' && !/^#[0-9a-fA-F]{6}$/.test(v)) continue
     if (campo === 'acento') v = v.toLowerCase()
 
